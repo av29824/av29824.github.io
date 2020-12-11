@@ -1,0 +1,39 @@
+---
+title: 'Reticulate: The Real Mind Meld '
+author: 'Andrea Vanags-Louredo'
+date: '2020-12-10'
+slug: test-post
+categories: []
+tags: ["r", "rmarkdown", "python", "reticulate"]
+description: ''
+---
+
+On the wrong page? Maybe you're looking for my first project? Click below!
+[Link to project 1](/projects/project1/)
+
+Still here?? Nice. 
+
+Let's look at how we can use R and Python together without wanting to tear your hair out in frustration: reticulate.
+
+```{r}
+#R-code chunk
+library(reticulate)
+
+lookalike <- "who is dr. woodward's celebrity look-alike?"
+```
+
+```{python}
+#python code chunk
+one= "brian david gilbert"
+two= "and mathew gray gubler"
+
+#access R-defined objects with r.
+
+print(r.lookalike,one,two)
+```
+
+![Brian David Gilbert](/post/2020-12-10-andrea-s-first-post_files/IMG_8572.PNG)
+
+![Mathew Gray Gubler](/post/2020-12-10-andrea-s-first-post_files/Matthew_Gray_Gubler_glasses.jpg)
+
+![like... even the same glasses... uncanny ](/post/2020-12-10-andrea-s-first-post_files/gubler_2.jpg)

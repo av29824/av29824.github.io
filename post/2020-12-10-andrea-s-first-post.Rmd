@@ -1,0 +1,23 @@
+---
+title: Andrea's First Post!
+author: Andrea Vanags
+date: '2020-12-10'
+slug: andrea-s-first-post
+categories: []
+tags: ["life", "updates", "me"]
+description: ''
+---
+
+[Link to project 1](/projects/project1/)
+
+```{r}
+#R-code chunk!
+ChickWeight <- as.data.frame(ChickWeight)
+
+head(ChickWeight)
+```
+
+```{python}
+
+```
+

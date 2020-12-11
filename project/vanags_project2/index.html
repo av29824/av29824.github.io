@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Andrea Vanags-Louredo" />
+    
+    <link rel="shortcut icon" type="image/x-icon" href="../../img/favicon.ico">
+    <title>project 2</title>
+    <meta name="generator" content="Hugo 0.79.0" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="../../css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="../../"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="../../post/">BLOG</a></li>
+        
+        <li><a href="../../projects/">PROJECTS</a></li>
+        
+        <li><a href="../../resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="../../project/vanags_project2/">project 2</a></strong>
+          </h3>
+        </div>
+ 
+<div class="blog-title">
+          <h4>
+         January 1, 0001 
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<div id="introduce-your-dataset-and-each-of-your-variables-in-a-paragraph.-what-are-they-measuring-how-many-observations" class="section level4">
+<h4>0. Introduce your dataset and each of your variables in a paragraph. What are they measuring? How many observations?</h4>
+<p><em>The 'HealthInsurance' dataset including info from the the Medical Expenditure Panel Survey conducted in 1996 was recovered from the AER package. This dataset contains 8,802 observations on 11 variables, but the variables I will be focusing on are: age, gender, education, family, ethnicity, married, insurance, and health. The wrangled dataset was renamed as 'data2' and it contains 1,258 rows (observations) for 8 columns. 'Age' is a numerical variable that describes number of years old a participant is, 'gender' indicates male or female, 'married' describes marital stauts (yes/no), 'insurance' describes whether or not participant has medical insurance (yes/no), 'health' is the self reported identifier on whether the participant believes thay are healthy or not (yes/no), 'family' is a numeric variable which indicates immediate family size, 'ethnicity' indicates whether the participant is: African-American, Caucasian, or other, and 'education' categorically indicates the highest degree obtained by the participant (no degree, GED, high school, bachelor, master, PhD, other.)</em></p>
+<pre class="r"><code>set.seed(1234)
+
+data(&quot;HealthInsurance&quot;)
+head(HealthInsurance)</code></pre>
+<pre><code>## health age limit gender insurance married selfemp family
+region ethnicity education
+## 1 yes 31 no male yes yes yes 4 south cauc bachelor
+## 2 yes 31 no female yes yes no 4 south cauc highschool
+## 3 yes 54 no male yes yes no 5 west cauc ged
+## 4 yes 27 no male yes no no 5 west cauc highschool
+## 5 yes 39 no male yes yes no 5 west cauc none
+## 6 yes 32 no female no no no 3 south afam bachelor</code></pre>
+<pre class="r"><code>#wrangling
+HealthInsurance %&gt;% select(age, family, gender, education, ethnicity, married, insurance, health) -&gt; data
+
+data%&gt;% group_by(health)%&gt;%filter(health==&quot;no&quot;)-&gt; nodata #629 obsvtns
+data%&gt;% group_by(health)%&gt;%filter(health==&quot;yes&quot;)-&gt; yesdata
+sample_n(yesdata, 629)-&gt;yesdata #randomly sample 629 observations so that there is equal amount of people who consider themselves healthy as those who do not
+
+#join the two datasets back into one
+full_join(yesdata, nodata) -&gt; data2
+data2%&gt;% na.omit() -&gt;data2
+data2%&gt;% ungroup()-&gt; data2
+
+
+nrow(data2) #1,258 total rows</code></pre>
+<pre><code>## [1] 1258</code></pre>
+<pre class="r"><code>ncol(data2) #8 columns</code></pre>
+<pre><code>## [1] 8</code></pre>
+<pre class="r"><code>data2 %&gt;% distinct(age)%&gt;% count() ## there are more than 10 distinct values for numerical variable &#39;age&#39;</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##       n
+##   &lt;int&gt;
+## 1    45</code></pre>
+<pre class="r"><code>data2 %&gt;% distinct(family)%&gt;% count() #there are more than 10 distinct values for numerical variable &#39;family&#39;</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##       n
+##   &lt;int&gt;
+## 1    11</code></pre>
+</div>
+<div id="pts-perform-a-manova" class="section level4">
+<h4>1. (15 pts) Perform a MANOVA</h4>
+<p><em>A MANOVA test was performed to find out if mean age (numeric) or family size (numeric) significantly differ by health (categorical). Since the overall MANOVA was significant (pr&lt;0.05), a one-way ANOVA was performed for each variable. Only the univariate ANOVA for age was found to be significant p&lt;0.05 (whether a participant considers themseveles healthy or not is influenced by mean age), and family size did not show a mean difference across 'health' (whether a participant considers themseveles healthy or not is NOT influenced by mean family size). 9 tests total were performed (1 manova + 2 anovas + 8 t-tests). The probability of at least one type 1 error (if unadjusted) is ~0.431. The Boneferroni adjusted signifiance level I should use if I want to keep the overall type 1 error rate at 0.05 is 0.0045. With this adjusted significance, the hypothesis test for age is still significant, while for family it is still insignificant. MANOVA assumes a multivariate normal distribution and that all groups have the same variance/covariance, and it is likely that these restrictive assumptions were not met within the dataset used.</em></p>
+<pre class="r"><code>man1 &lt;- manova(cbind(age, family)~health, data=data2)
+summary(man1)</code></pre>
+<pre><code>## Df Pillai approx F num Df den Df Pr(&gt;F)
+## health 1 0.028621 18.489 2 1255 1.22e-08 ***
+## Residuals 1256
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<pre class="r"><code>summary.aov(man1) ##get univariate ANOVAs from MANOVA object</code></pre>
+<pre><code>## Response age :
+## Df Sum Sq Mean Sq F value Pr(&gt;F)
+## health 1 4401 4401.1 35.623 3.111e-09 ***
+## Residuals 1256 155177 123.5
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1
+##
+## Response family :
+## Df Sum Sq Mean Sq F value Pr(&gt;F)
+## health 1 0.7 0.71542 0.2677 0.605
+## Residuals 1256 3356.9 2.67268</code></pre>
+<pre class="r"><code>data2%&gt;% group_by(health)%&gt;%summarize(mean(age),mean(family))</code></pre>
+<pre><code>## # A tibble: 2 x 3
+##   health `mean(age)` `mean(family)`
+##   &lt;fct&gt;        &lt;dbl&gt;          &lt;dbl&gt;
+## 1 no            41.8           3.19
+## 2 yes           38.1           3.15</code></pre>
+<pre class="r"><code># post hoc t-tests for all 2 ANOVAs
+pairwise.t.test(data2$age, data2$health, p.adj = &quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  data2$age and data2$health 
+## 
+##     no     
+## yes 3.1e-09
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>pairwise.t.test(data2$family, data2$health, p.adj = &quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  data2$family and data2$health 
+## 
+##     no 
+## yes 0.6
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code># 1 manova + 2 anovas + 8 (bc 4x2) t-tests= 11 tests
+
+#At least one type 1 error
+1-(1-.05)^11</code></pre>
+<pre><code>## [1] 0.4311999</code></pre>
+<pre class="r"><code># or: 1 - ((0.95)^9)
+
+#bonferroni correction
+0.05/11</code></pre>
+<pre><code>## [1] 0.004545455</code></pre>
+<pre class="r"><code>#assumptions
+library(rstatix)
+
+group &lt;- data2$health
+DVs &lt;- data2%&gt;%select(age,family)
+
+#Test multivariate normality for each group (null: assumption met)
+sapply(split(DVs,group), mshapiro_test)</code></pre>
+<pre><code>##           no           yes         
+## statistic 0.9343816    0.9621522   
+## p.value   5.378256e-16 1.181878e-11</code></pre>
+<pre class="r"><code>#If any p&lt;.05, stop. If not, test homogeneity of covariance matrices
+# ^^ (not met but I want to test homogeneity just to verify)
+
+#Box&#39;s M test (null: assumption met)
+box_m(DVs, group)</code></pre>
+<pre><code>## # A tibble: 1 x 4
+## statistic p.value parameter method
+## &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;
+## 1 11.8 0.00821 3 Box&#39;s M-test for Homogeneity of
+Covariance Matrices</code></pre>
+<pre class="r"><code>#View covariance matrices for each group
+lapply(split(DVs,group), cov)</code></pre>
+<pre><code>## $no
+##               age    family
+## age    124.859012 -2.728051
+## family  -2.728051  3.022830
+## 
+## $yes
+##               age    family
+## age    122.237395 -1.243507
+## family  -1.243507  2.322522</code></pre>
+</div>
+<div id="randomization-test." class="section level4">
+<h4>2. Randomization test.</h4>
+<p><em>A chi-squared randomization test was performed on the dataset between the categorical variables: 'health' and 'education'. The null hypothesis was that whether a person considers themselves healthy or not is independent from their education level (i.e. health and education are independent). The alternative hypothesis was that whether a person considers themselves healthy or not is dependent on their education level (i.e. health and education are not independent). This chi-square test provided evidence that the proportion of participants who believe they are healthy (or not) did significantly differ between the 7 levels of education (X-squared = 65.468, df = 6, p-value = 3.462e-12). Thus, the null hypothesis can be rejected. From the plotted visualization of chi-squared, it appears that most participants who belive they are not healthy have no formal education or only highschool level education.</em></p>
+<pre class="r"><code>#randomization test Chi-Squared (categorical vs categorical)
+table(data2$health, data2$education) </code></pre>
+<pre><code>##      
+##       none ged highschool bachelor master phd other
+##   no   182  44        280       63     23   4    33
+##   yes   90  20        313      114     35  13    44</code></pre>
+<pre class="r"><code>chisq.test(table(data2$health, data2$education))</code></pre>
+<pre><code>## 
+##  Pearson&#39;s Chi-squared test
+## 
+## data:  table(data2$health, data2$education)
+## X-squared = 65.468, df = 6, p-value = 3.462e-12</code></pre>
+<pre class="r"><code>#visualization
+ggplot(data2) + aes(x = education, fill = health) + geom_bar() + scale_fill_hue() +     theme_minimal()+ labs(title = &quot;Distribution of Health by Education Level&quot;, subtitle = &quot;Chi-Squared Test&quot;,caption = &quot;Test Statistics: X-squared = 65.468, df = 6, p-value = 3.462e-12&quot;)</code></pre>
+<p><img src="../../project/vanags_project2_files/figure-html/unnamed-chunk-4-1.png" width="768" style="display: block; margin: auto;" /></p>
+</div>
+<div id="build-a-linear-regression-model-predicting-one-of-your-response-variables-from-at-least-2-other-variables-including-their-interaction.-mean-center-any-numeric-variables-involved-in-the-interaction." class="section level4">
+<h4>3. Build a linear regression model predicting one of your response variables from at least 2 other variables, including their interaction. Mean-center any numeric variables involved in the interaction.</h4>
+<p><em>Interpretting the coefficients: Controlling for age, there is a ~0.110 difference in insurance status between between patients who consider themselves healthy versus those who do not. Controlling for insurance status, there is a ~0.0097 difference in mean-centered ages between patients who consider themselves healthy versus those who do not. Controlling for age, for every 1 unit increase in insurance status, health status increases by 0.002424 on average. There is not a significant interaction between insurance status and age.</em></p>
+<p><em>The significance of the results did not change even after comparison with robust SEs. This makes sense since there was very little difference between original SE and the robust SE values. The p-value for insurance decreased from original to robust SEs due to an increase in t-value. For mean centred age, the t-value increased and as a result the p-value decreased slightly from original to robust SE. When SEs decreases, t value increases, and p value decreases. According to the adjusted R-squared value of 0.03398, my model explains 3.4% of the variation in the outcome (not a very good model).The assumptions for linearity, normality, and homoskedasticity were not met.</em></p>
+<pre class="r"><code>#Mean centering and dummy coding variables
+data3 &lt;- data2%&gt;% mutate(health_=ifelse(health==&quot;yes&quot;, 1, 0))
+data3 &lt;- data3%&gt;% mutate(insurance=ifelse(insurance==&quot;yes&quot;, 1, 0))
+data3 &lt;- data3%&gt;% mutate(gender=ifelse(gender==&quot;female&quot;, 1, 0))
+data3 &lt;- data3%&gt;% mutate(married=ifelse(married==&quot;yes&quot;, 1, 0))
+data3 &lt;- data3%&gt;% mutate(age_c=age-mean(age, na.rm=T))
+data3 &lt;- data3%&gt;% mutate(family_c=family-mean(family, na.rm=T))
+
+head(data3)</code></pre>
+<pre><code>## # A tibble: 6 x 11
+## age family gender education ethnicity married insurance
+health health_ age_c family_c
+## &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;fct&gt; &lt;fct&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;fct&gt; &lt;dbl&gt;
+&lt;dbl&gt; &lt;dbl&gt;
+## 1 40 3 1 highschool cauc 0 1 yes 1 0.0326 -0.170
+## 2 28 4 0 none cauc 1 1 yes 1 -12.0 0.830
+## 3 40 5 0 highschool cauc 1 1 yes 1 0.0326 1.83
+## 4 20 6 1 none cauc 0 0 yes 1 -20.0 2.83
+## 5 19 5 1 highschool cauc 0 1 yes 1 -21.0 1.83
+## 6 46 2 1 master cauc 1 1 yes 1 6.03 -1.17</code></pre>
+<pre class="r"><code>#Linear regression model with interactions
+linfit &lt;- lm(health_~insurance*age_c, data = data3)
+#coef estimates
+summary(linfit)</code></pre>
+<pre><code>##
+## Call:
+## lm(formula = health_ ~ insurance * age_c, data = data3)
+##
+## Residuals:
+## Min 1Q Median 3Q Max
+## -0.68394 -0.48881 0.05671 0.47889 0.77807
+##
+## Coefficients:
+## Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept) 0.415263 0.028777 14.430 &lt; 2e-16 ***
+## insurance 0.109921 0.032910 3.340 0.000862 ***
+## age_c -0.009651 0.002393 -4.033 5.85e-05 ***
+## insurance:age_c 0.002424 0.002798 0.866 0.386586
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1
+##
+## Residual standard error: 0.4916 on 1254 degrees of
+freedom
+## Multiple R-squared: 0.03628, Adjusted R-squared: 0.03398
+## F-statistic: 15.74 on 3 and 1254 DF, p-value: 4.744e-10</code></pre>
+<pre class="r"><code>#plot the regression
+ggplot(data3, aes(x=age_c, y=insurance,group=health))+geom_point(aes(color=health))+geom_smooth(method=&quot;lm&quot;,se=F,fullrange=T,aes(color=health))+ theme(legend.position=c(.9,.3), legend.title= element_text(size=9),legend.text = element_text(size=8))+xlab(&quot;mean centered age&quot;)</code></pre>
+<p><img src="../../project/vanags_project2_files/figure-html/unnamed-chunk-6-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># H0 = the predictors of insurance and age do not explain any variation in health (true slope would be zero)
+# Ha=  the predictors of insurance and age do explain any variation in health (true slope is NOT zero) </code></pre>
+<pre class="r"><code>#Checking assumptions of linearity and homoskedasticity
+resids&lt;-linfit$residuals
+fitvals&lt;-linfit$fitted.values
+ggplot()+geom_point(aes(fitvals,resids))+geom_hline(yintercept=0, color=&#39;red&#39;)</code></pre>
+<p><img src="../../project/vanags_project2_files/figure-html/unnamed-chunk-7-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>bptest(linfit) #H0: homoskedastic</code></pre>
+<pre><code>## 
+##  studentized Breusch-Pagan test
+## 
+## data:  linfit
+## BP = 10.084, df = 3, p-value = 0.01787</code></pre>
+<pre class="r"><code>#^^ not homoskedastic!
+
+#normality assumption test
+ggplot()+geom_histogram(aes(resids), bins=30)</code></pre>
+<p><img src="../../project/vanags_project2_files/figure-html/unnamed-chunk-7-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot()+geom_qq(aes(sample=resids))+geom_qq_line(aes(sample=resids, color=&#39;red&#39;)) + theme(legend.position = &quot;none&quot;)</code></pre>
+<p><img src="../../project/vanags_project2_files/figure-html/unnamed-chunk-7-3.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ks.test(resids, &quot;pnorm&quot;, sd=sd(resids))</code></pre>
+<pre><code>## 
+##  One-sample Kolmogorov-Smirnov test
+## 
+## data:  resids
+## D = 0.24547, p-value &lt; 2.2e-16
+## alternative hypothesis: two-sided</code></pre>
+<pre class="r"><code>#Normal-theory standard errors
+coeftest(linfit)</code></pre>
+<pre><code>##
+## t test of coefficients:
+##
+## Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept) 0.4152627 0.0287769 14.4304 &lt; 2.2e-16 ***
+## insurance 0.1099211 0.0329101 3.3400 0.0008623 ***
+## age_c -0.0096508 0.0023932 -4.0326 5.849e-05 ***
+## insurance:age_c 0.0024238 0.0027985 0.8661 0.3865859
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<pre class="r"><code>#Robust standard errors
+coeftest(linfit, vcov = vcovHC(linfit))</code></pre>
+<pre><code>##
+## t test of coefficients:
+##
+## Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept) 0.4152627 0.0280984 14.7789 &lt; 2.2e-16 ***
+## insurance 0.1099211 0.0323558 3.3973 0.000702 ***
+## age_c -0.0096508 0.0023023 -4.1918 2.962e-05 ***
+## insurance:age_c 0.0024238 0.0027091 0.8947 0.371117
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<pre class="r"><code>#Regression without interactions
+linfit2 &lt;- lm(health_~insurance+gender+age_c, data = data3)
+summary(linfit2)</code></pre>
+<pre><code>##
+## Call:
+## lm(formula = health_ ~ insurance + gender + age_c, data
+= data3)
+##
+## Residuals:
+## Min 1Q Median 3Q Max
+## -0.74088 -0.48005 0.03139 0.47396 0.77205
+##
+## Coefficients:
+## Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept) 0.454685 0.030487 14.914 &lt; 2e-16 ***
+## insurance 0.112569 0.032562 3.457 0.000564 ***
+## gender -0.084207 0.027726 -3.037 0.002438 **
+## age_c -0.007904 0.001236 -6.393 2.29e-10 ***
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1
+##
+## Residual standard error: 0.49 on 1254 degrees of freedom
+## Multiple R-squared: 0.04275, Adjusted R-squared: 0.04046
+## F-statistic: 18.67 on 3 and 1254 DF, p-value: 7.543e-12</code></pre>
+<pre class="r"><code>#likelihood ratio test
+lrtest(linfit, linfit2)</code></pre>
+<pre><code>## Likelihood ratio test
+##
+## Model 1: health_ ~ insurance * age_c
+## Model 2: health_ ~ insurance + gender + age_c
+## #Df LogLik Df Chisq Pr(&gt;Chisq)
+## 1 5 -889.80
+## 2 5 -885.56 0 8.4674 &lt; 2.2e-16 ***
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+</div>
+<div id="rerun-same-regression-with-bootstrapped-standard-errors" class="section level4">
+<h4>4. Rerun same regression with bootstrapped standard errors</h4>
+<p><em>To bootstrap SEs, I randomly sampled rows from the dataset with replacement.As SE increases, the t-value decreases and the p-value increases (and vice versa). The bootstrapped SE for the intercept is less than both the original and robust SE values which means that the t-value for it is greater and as a result the p-value is smaller for the intercept. The bootstrapped SEs for insurance are greater than the original SEs and the robust SEs. The bootstrapped SEs for age_c and insurance:age_c are greater than the robust SEs but less than the original SEs. Compared to the robust SEs’ t and p values, the bootstrapped t values will be greater and the p values will be lesser.</em></p>
+<pre class="r"><code>#Bootstrapped standard errors
+
+samp_distn&lt;-replicate(5000, {
+ boot_dat&lt;-boot_dat&lt;-data3[sample(nrow(data3),replace=TRUE),]
+ bootfit&lt;-lm(health_~insurance*age_c, data = boot_dat)
+ coef(bootfit)
+})
+
+## Estimated SEs
+samp_distn%&gt;%t%&gt;%as.data.frame%&gt;%summarize_all(sd)</code></pre>
+<pre><code>##   (Intercept)  insurance       age_c insurance:age_c
+## 1  0.02783145 0.03224429 0.002327722     0.002732122</code></pre>
+</div>
+<div id="fit-a-logistic-regression-model-predicting-a-binary-variable-from-at-least-two-explanatory-variables" class="section level4">
+<h4>5. Fit a logistic regression model predicting a binary variable from at least two explanatory variables</h4>
+<p><em>I fit a logistic regression model predicting the binary variable 'health' from insurance, family, age, and gender. The predicted odds of believing that you are healthy when you are a male with no health insurance and when mean centered age and family are 0 = 0.833. When holding family_c, age_c, and gender constant, having insurance multiplies the predicted odds of considering yourself to be healthy by a factor of 1.60. When holding insurance, age_c, and gender constant, increasing mean centered family size by 1 multiplies the predicted odds of considering yourself to be healthy by a factor of 0.96. When holding insurance, family_c, and gender constant, increasing mean centered age by 1 multiplies the predicted odds of considering yourself to be healthy by a factor of 0.97. When holding family_c, age_c, and insurance constant, being female multiplies the predicted odds of considering yourself to be healthy by a factor of 0.69.</em></p>
+<p><em>According to the calculated accuracy, this model correctly predicts 58.3% of the outcomes in the data overall. The model correctly predicts 57.4% of cases as positive (health=yes) out of the total number of positives (sensitivity). The model correctly predicts 59.3% of cases as negative (health=no) out of the total number of negatives (specificity). In regards to precision in this model, 58.5% of the predicted as positive cases are true positives (people predicited as healthy who actually consider themselves healthy).</em></p>
+<p><em>The AUC (0.617) indicates that the model is a poor predictor of new data (and poor at distinguishing between whether a participant considers themselves healthy or not). The ROC curve is not very good (if it could predict perfectly, TPR would be 1 while FPR would be 0 for any cutoff except 100%) but it isn’t a straight line either. This indicates that it is possible to distinguish between positive and negatives cases, just poorly and with low accuracy. The AUC of the model was found to be 0.617 and the calculated AUC was also found to be 0.617 (both were equivalent)</em></p>
+<pre class="r"><code>#Logistic regression
+logfit&lt;-glm(health_~insurance+family_c+age_c+gender, data=data3, family=&quot;binomial&quot;)
+coeftest(logfit)</code></pre>
+<pre><code>##
+## z test of coefficients:
+##
+## Estimate Std. Error z value Pr(&gt;|z|)
+## (Intercept) -0.1822414 0.1280227 -1.4235 0.154589
+## insurance 0.4684662 0.1377038 3.4020 0.000669 ***
+## family_c -0.0459381 0.0357484 -1.2850 0.198778
+## age_c -0.0335688 0.0053054 -6.3273 2.495e-10 ***
+## gender -0.3647908 0.1164450 -3.1327 0.001732 **
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<pre class="r"><code>#Since you always exponentiate coefficients before interpretation
+exp(coef(logfit))%&gt;%data.frame()</code></pre>
+<pre><code>##                     .
+## (Intercept) 0.8334001
+## insurance   1.5975420
+## family_c    0.9551011
+## age_c       0.9669883
+## gender      0.6943419</code></pre>
+<pre class="r"><code>#confusion matrix
+prob &lt;- predict(logfit, type=&quot;response&quot;)
+pred&lt;-ifelse(prob&gt;.5,1,0)
+
+table(prediction=pred, truth=data3$health_)%&gt;%addmargins</code></pre>
+<pre><code>##           truth
+## prediction    0    1  Sum
+##        0    373  268  641
+##        1    256  361  617
+##        Sum  629  629 1258</code></pre>
+<pre class="r"><code>#accuracy
+(373+361)/1258 #0.5834658</code></pre>
+<pre><code>## [1] 0.5834658</code></pre>
+<pre class="r"><code>#sensitivity (TPR)
+361/629 # 0.5739269 </code></pre>
+<pre><code>## [1] 0.5739269</code></pre>
+<pre class="r"><code>#specificity (TNR)
+373/629 # 0.5930048</code></pre>
+<pre><code>## [1] 0.5930048</code></pre>
+<pre class="r"><code>#Recall/Precision (PPV)
+361/617 #0.5850891</code></pre>
+<pre><code>## [1] 0.5850891</code></pre>
+<pre class="r"><code>#AUC by hand
+class_diag(prob,data3$health_) #auc=0.6166815</code></pre>
+<pre><code>## acc sens spec ppv f1 auc
+## 1 0.5834658 0.5739269 0.5930048 0.5850891 0.5794543
+0.6166815</code></pre>
+<pre class="r"><code>#Density of log-odds plot
+data4 &lt;- data3
+data4$logit &lt;- predict(logfit)
+ggplot(data4, aes(logit, fill=health)) + geom_density(alpha=0.3) + geom_vline(xintercept=0, lty=2)</code></pre>
+<p><img src="../../project/vanags_project2_files/figure-html/unnamed-chunk-11-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#ROC curve and AUC
+data5 &lt;- data3%&gt;%mutate(probability=predict(logfit, type = &quot;response&quot;), prediction=ifelse(prob&gt;.5,1,0))
+
+classify&lt;-data5%&gt;%transmute(probability,prediction,truth=health)
+
+ROCplot&lt;-ggplot(classify)+geom_roc(aes(d=truth,m=probability), n.cuts=0) + geom_segment(aes(x=0,y=0,xend=1,yend=1),lty=2)
+ROCplot</code></pre>
+<p><img src="../../project/vanags_project2_files/figure-html/unnamed-chunk-11-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#auc
+calc_auc(ROCplot) #same as in-sample auc metric</code></pre>
+<pre><code>##   PANEL group       AUC
+## 1     1    -1 0.6166815</code></pre>
+</div>
+<div id="perform-a-logistic-regression-predicting-the-same-binary-response-variable-from-all-of-the-rest-of-your-variables" class="section level4">
+<h4>6. Perform a logistic regression predicting the same binary response variable from ALL of the rest of your variables</h4>
+<p><em>A logistic regression predicting the binary variable 'health' was performed from all of the other explanatory variables. After fitting the model, it was found that this model correctly predicts 61.4% of the outcomes in the data overall. The model correctly predicts 63.8% of cases as positive (health=yes) out of the total number of positives (sensitivity). The model correctly predicts 59.0% of cases as negative (health=no) out of the total number of negatives (specificity). In regards to precision in this model, 60.8% of the predicted as positive cases are true positives (people predicited as healthy who actually consider themselves healthy). AUC was found to be 0.672 which means that this model is a poor predictor of new data (and poor at distinguishing between whether a participant considers themselves healthy or not).</em></p>
+<p><em>After performing the 10-fold CV using all the variables, the out-of sample classification diagnostics of accuracy, sensitivity, specificity and precision were found to be 0.599, 0.625, 0.576, and 0.598 respectively. The AUC was found to be 0.657 which is slightly less than the in-sample AUC metric of 0.672. Because the change is so slight, the model is still a poor predictor of new data (and poor at distinguishing between whether a participant considers themselves healthy or not). All out-of-sample diagnostic metrics were less than in-sample ones.</em></p>
+<p><em>After performing the 10-fold CV using only the variables that lasso retained (age_c, gender, bachelor_, none_, phd_, ged_, and afam_), the accuracy, sensitivity, specificity and precision were found to be 0.606, 0.493, 0.720, and 0.643 respectively. The AUC was found to be 0.659 which is slightly better than the AUC from the 10-fold CV using all variables (0.657) but still less than in-sample logistic regression of all variables (AUC=0.672). However, after performing the 10-fold CV using only the variables that lasso selected, the AUC(0.659) was better than the original logistic regression from Q5 with variables insurance, family, age, and gender (AUC=0.617). Throughout the entire project, the AUC indicated no change from &quot;poor&quot; predictor which means that all models are poor predictors of new data (and poor at distinguishing between whether a participant considers themselves healthy or not). </em></p>
+<pre class="r"><code>#dummy code ethnicity and education 
+head(data3)</code></pre>
+<pre><code>## # A tibble: 6 x 11
+## age family gender education ethnicity married insurance
+health health_ age_c family_c
+## &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;fct&gt; &lt;fct&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;fct&gt; &lt;dbl&gt;
+&lt;dbl&gt; &lt;dbl&gt;
+## 1 40 3 1 highschool cauc 0 1 yes 1 0.0326 -0.170
+## 2 28 4 0 none cauc 1 1 yes 1 -12.0 0.830
+## 3 40 5 0 highschool cauc 1 1 yes 1 0.0326 1.83
+## 4 20 6 1 none cauc 0 0 yes 1 -20.0 2.83
+## 5 19 5 1 highschool cauc 0 1 yes 1 -21.0 1.83
+## 6 46 2 1 master cauc 1 1 yes 1 6.03 -1.17</code></pre>
+<pre class="r"><code>data3 &lt;- data3%&gt;% mutate(cauc_=ifelse(ethnicity==&quot;cauc&quot;, 1, 0))
+data3 &lt;- data3%&gt;% mutate(afam_=ifelse(ethnicity==&quot;afam&quot;, 1, 0))
+data3 &lt;- data3%&gt;% mutate(other_=ifelse(ethnicity==&quot;other&quot;, 1, 0))
+data3 &lt;- data3%&gt;% mutate(bachelor_=ifelse(education==&quot;bachelor&quot;, 1, 0))
+data3 &lt;- data3%&gt;% mutate(none_=ifelse(education==&quot;none&quot;, 1, 0))
+data3 &lt;- data3%&gt;% mutate(highschool_=ifelse(education==&quot;highschool&quot;, 1, 0))
+data3 &lt;- data3%&gt;% mutate(phd_=ifelse(education==&quot;phd&quot;, 1, 0))
+data3 &lt;- data3%&gt;% mutate(master_=ifelse(education==&quot;master&quot;, 1, 0))
+data3 &lt;- data3%&gt;% mutate(otheredu_=ifelse(education==&quot;other&quot;, 1, 0))
+data3 &lt;- data3%&gt;% mutate(ged_=ifelse(education==&quot;ged&quot;, 1, 0))</code></pre>
+<pre class="r"><code>#Logistic regression
+logfit2&lt;-glm(health_~age_c+family_c+gender+bachelor_+none_+highschool_+ phd_+master_+otheredu_+ged_+cauc_+afam_+ other_+ married+ insurance, data=data3, family=&quot;binomial&quot;)
+
+coeftest(logfit2)</code></pre>
+<pre><code>##
+## z test of coefficients:
+##
+## Estimate Std. Error z value Pr(&gt;|z|)
+## (Intercept) -0.9621095 0.4008151 -2.4004 0.0163780 *
+## age_c -0.0354323 0.0058298 -6.0778 1.218e-09 ***
+## family_c -0.0391879 0.0401048 -0.9771 0.3285012
+## gender -0.3908337 0.1205456 -3.2422 0.0011861 **
+## bachelor_ 1.3743852 0.3199586 4.2955 1.743e-05 ***
+## none_ 0.1174922 0.3076611 0.3819 0.7025442
+## highschool_ 0.9124060 0.2889354 3.1578 0.0015895 **
+## phd_ 2.0356055 0.6445747 3.1581 0.0015882 **
+## master_ 1.2975312 0.3901305 3.3259 0.0008814 ***
+## otheredu_ 1.0970982 0.3627810 3.0241 0.0024935 **
+## ged_ NA NA NA NA
+## cauc_ 0.1390869 0.2638768 0.5271 0.5981310
+## afam_ -0.2814660 0.3091148 -0.9106 0.3625299
+## other_ NA NA NA NA
+## married 0.2265130 0.1422828 1.5920 0.1113866
+## insurance 0.1494854 0.1484321 1.0071 0.3138884
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<pre class="r"><code>#Since you always exponentiate coefficients before interpretation
+exp(coef(logfit2))%&gt;%data.frame()</code></pre>
+<pre><code>##                     .
+## (Intercept) 0.3820860
+## age_c       0.9651881
+## family_c    0.9615700
+## gender      0.6764927
+## bachelor_   3.9526460
+## none_       1.1246729
+## highschool_ 2.4903070
+## phd_        7.6568871
+## master_     3.6602491
+## otheredu_   2.9954612
+## ged_               NA
+## cauc_       1.1492239
+## afam_       0.7546766
+## other_             NA
+## married     1.2542189
+## insurance   1.1612366</code></pre>
+<pre class="r"><code>#confusion matrix
+prob2 &lt;- predict(logfit2, type=&quot;response&quot;)
+pred2&lt;-ifelse(prob2&gt;.5,1,0)
+
+table(prediction=pred2, truth=data3$health_)%&gt;%addmargins</code></pre>
+<pre><code>##           truth
+## prediction    0    1  Sum
+##        0    371  228  599
+##        1    258  401  659
+##        Sum  629  629 1258</code></pre>
+<pre class="r"><code>#accuracy
+(371+401)/1258 #0.6136725</code></pre>
+<pre><code>## [1] 0.6136725</code></pre>
+<pre class="r"><code>#sensitivity (TPR)
+401/629 # 0.6375199</code></pre>
+<pre><code>## [1] 0.6375199</code></pre>
+<pre class="r"><code>#specificity (TNR)
+371/629 # 0.5898251 </code></pre>
+<pre><code>## [1] 0.5898251</code></pre>
+<pre class="r"><code>#Recall/Precision (PPV)
+401/659 # 0.6084977</code></pre>
+<pre><code>## [1] 0.6084977</code></pre>
+<pre class="r"><code>#AUC by hand
+class_diag(prob2,data3$health_) #auc=0.6722496</code></pre>
+<pre><code>## acc sens spec ppv f1 auc
+## 1 0.6136725 0.6375199 0.5898251 0.6084977 0.6226708
+0.6722496</code></pre>
+<pre class="r"><code>#10-fold CV with the same model
+set.seed(1234)
+k=10 #choose number of folds
+data7&lt;-data3[sample(nrow(data3)),] #randomly order rows
+folds&lt;-cut(seq(1:nrow(data3)),breaks=k,labels=F) #create folds
+
+
+diags2&lt;-NULL
+for(i in 1:k){
+## Create training and test sets
+train2&lt;-data7[folds!=i,]
+test2&lt;-data7[folds==i,]
+truth2&lt;-test2$health_ ## Truth labels for fold i
+## Train model on training set (all but fold i)
+train_fit2&lt;- glm(health_ ~ age_c+family_c+gender+ bachelor_ +none_+highschool_+ phd_+master_+otheredu_+ged_+cauc_+afam_+ other_+ married+ insurance, data=train2, family=&quot;binomial&quot;)
+## Test model on test set (fold i)
+probs2&lt;-predict(train_fit2,newdata = test2,type=&quot;response&quot;)
+## Get diagnostics for fold i
+diags2&lt;-rbind(diags2,class_diag(probs2,truth2))
+}
+
+#report average out-of-sample classification diagnostics
+diags2%&gt;%summarize_all(mean)</code></pre>
+<pre><code>## acc sens spec ppv f1 auc
+## 1 0.5994286 0.6250035 0.5763394 0.5979476 0.6087314
+0.6566633</code></pre>
+<pre class="r"><code>#Perform LASSO on the same model/variables
+lasfit &lt;- glm(health_ ~ -1 + age_c+family_c+gender+ bachelor_ +none_+highschool_+ phd_+master_+otheredu_+ged_+cauc_+afam_+ other_+ married+ insurance, data=data3, family=&quot;binomial&quot;)
+
+y&lt;-as.matrix(data3$health_)
+x&lt;-model.matrix(lasfit)
+x&lt;-scale(x)
+cv&lt;-cv.glmnet(x,y, family=&#39;binomial&#39;)
+lasso&lt;-glmnet(x,y,family=&quot;binomial&quot;,lambda=cv$lambda.1se)
+#coef(cv)
+coef(lasso)</code></pre>
+<pre><code>## 16 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
+##                       s0
+## (Intercept) -0.002297175
+## age_c       -0.218239717
+## family_c     .          
+## gender      -0.069127136
+## bachelor_    0.063756278
+## none_       -0.249414327
+## highschool_  .          
+## phd_         0.011507647
+## master_      .          
+## otheredu_    .          
+## ged_        -0.093924698
+## cauc_        .          
+## afam_       -0.055980478
+## other_       .          
+## married      .          
+## insurance    .</code></pre>
+<pre class="r"><code>#cross-validate lasso
+set.seed(1234)
+k=10
+
+data6 &lt;- data3 %&gt;% sample_frac #put rows of dataset in random order
+folds3 &lt;- ntile(1:nrow(data3),n=10) #create fold labels
+
+diags3&lt;-NULL
+for(i in 1:k){
+train3 &lt;- data6[folds!=i,] #create training set (all but fold i)
+test3 &lt;- data6[folds==i,] #create test set (just fold i)
+truth3 &lt;- test3$health_ #save truth labels from fold i
+fit3 &lt;- glm(health_ ~ -1 + age_c+gender+ bachelor_ +none_+ phd_+ged_+afam_, data=train3, family=&quot;binomial&quot;)
+probs3 &lt;- predict(fit3, newdata=test3, type=&quot;response&quot;)
+diags3&lt;-rbind(diags3,class_diag(probs3,truth3))
+}
+
+diags3%&gt;%summarize_all(mean) #auc improved a little from out-of sample CV with varaibles not selected by lasso</code></pre>
+<pre><code>## acc sens spec ppv f1 auc
+## 1 0.6057206 0.4934976 0.7195788 0.643313 0.5556541
+0.6587442</code></pre>
+</div>
+
+            
+        <hr>         <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div> 
+            </div>
+          </div>
+
+   <hr>  <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+        </div>
+      </div>
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="../../js/docs.min.js"></script>
+<script src="../../js/main.js"></script>
+
+<script src="../../js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>

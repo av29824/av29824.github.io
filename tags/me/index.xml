@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>me on Andrea Vanags&#39; SDS 348 Website</title>
+    <link>/tags/me/</link>
+    <description>Recent content in me on Andrea Vanags&#39; SDS 348 Website</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Thu, 10 Dec 2020 00:00:00 +0000</lastBuildDate><atom:link href="/tags/me/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Andrea&#39;s First Post!</title>
+      <link>/post/2020/12/10/andrea-s-first-post/</link>
+      <pubDate>Thu, 10 Dec 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2020/12/10/andrea-s-first-post/</guid>
+      <description> Link to project 1
+#R-code chunk! ChickWeight &amp;lt;- as.data.frame(ChickWeight) head(ChickWeight) ## weight Time Chick Diet ## 1 42 0 1 1 ## 2 51 2 1 1 ## 3 59 4 1 1 ## 4 64 6 1 1 ## 5 76 8 1 1 ## 6 93 10 1 1 </description>
+    </item>
+    
+  </channel>
+</rss>

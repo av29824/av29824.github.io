@@ -1,0 +1,413 @@
+---
+title: "project 2"
+author: "Andrea Vanags av29824"
+date: "2020-12-11"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+library(knitr)
+hook_output = knit_hooks$get('output')
+knit_hooks$set(output = function(x, options) {
+  # this hook is used only when the linewidth option is not NULL
+  if (!is.null(n <- options$linewidth)) {
+    x = knitr:::split_lines(x)
+    # any lines wider than n should be wrapped
+    if (any(nchar(x) > n)) x = strwrap(x, width = n)
+    x = paste(x, collapse = '\n')
+  }
+  hook_output(x, options)
+})
+
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE,fig.align="center",warning=FALSE,message=FALSE,fig.width=8, fig.height=5, linewidth=60)
+options(tibble.width = 100,width = 100)
+library(tidyverse)
+```
+
+
+```{r, echo = FALSE}
+#install.packages("AER")
+library(AER)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(plotROC)
+library(glmnet)
+
+class_diag <- function(probs,truth){
+  #CONFUSION MATRIX: CALCULATE ACCURACY, TPR, TNR, PPV
+  tab<-table(factor(probs>.5,levels=c("FALSE","TRUE")),truth)
+  acc=sum(diag(tab))/sum(tab)
+  sens=tab[2,2]/colSums(tab)[2]
+  spec=tab[1,1]/colSums(tab)[1]
+  ppv=tab[2,2]/rowSums(tab)[2]
+  f1=2*(sens*ppv)/(sens+ppv)
+
+  if(is.numeric(truth)==FALSE & is.logical(truth)==FALSE) truth<-as.numeric(truth)-1
+  
+  #CALCULATE EXACT AUC
+  ord<-order(probs, decreasing=TRUE)
+  probs <- probs[ord]; truth <- truth[ord]
+  
+  TPR=cumsum(truth)/max(1,sum(truth)) 
+  FPR=cumsum(!truth)/max(1,sum(!truth))
+  
+  dup<-c(probs[-1]>=probs[-length(probs)], FALSE)
+  TPR<-c(0,TPR[!dup],1); FPR<-c(0,FPR[!dup],1)
+  n <- length(TPR)
+  auc<- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+
+  data.frame(acc,sens,spec,ppv,f1,auc)
+}
+```
+
+#### 0. Introduce your dataset and each of your variables in a paragraph. What are they measuring? How many observations?
+
+*The 'HealthInsurance' dataset including info from the the Medical Expenditure Panel Survey conducted in 1996 was recovered from the AER package. This dataset contains 8,802 observations on 11 variables, but the variables I will be focusing on are: age, gender, education, family, ethnicity, married, insurance, and health. The wrangled dataset was renamed as 'data2' and it contains 1,258 rows (observations) for 8 columns. 'Age' is a numerical variable that describes number of years old a participant is, 'gender' indicates male or female, 'married' describes marital stauts (yes/no), 'insurance' describes whether or not participant has medical insurance (yes/no), 'health' is the self reported identifier on whether the participant believes thay are healthy or not (yes/no), 'family' is a numeric variable which indicates immediate family size, 'ethnicity' indicates whether the participant is:  African-American, Caucasian, or other, and 'education' categorically indicates the highest degree obtained by the participant (no degree, GED, high school, bachelor, master, PhD, other.)*
+
+```{r}
+set.seed(1234)
+
+data("HealthInsurance")
+head(HealthInsurance)
+
+#wrangling
+HealthInsurance %>% select(age, family, gender, education, ethnicity, married, insurance, health) -> data
+
+data%>% group_by(health)%>%filter(health=="no")-> nodata #629 obsvtns
+data%>% group_by(health)%>%filter(health=="yes")-> yesdata
+sample_n(yesdata, 629)->yesdata #randomly sample 629 observations so that there is equal amount of people who consider themselves healthy as those who do not
+
+#join the two datasets back into one
+full_join(yesdata, nodata) -> data2
+data2%>% na.omit() ->data2
+data2%>% ungroup()-> data2
+
+
+nrow(data2) #1,258 total rows
+ncol(data2) #8 columns
+
+data2 %>% distinct(age)%>% count() ## there are more than 10 distinct values for numerical variable 'age'
+data2 %>% distinct(family)%>% count() #there are more than 10 distinct values for numerical variable 'family'
+
+```
+
+#### 1. (15 pts) Perform a MANOVA 
+
+*A MANOVA test was performed to find out if mean age (numeric) or family size (numeric) significantly differ by health (categorical). Since the overall MANOVA was significant (pr<0.05), a one-way ANOVA was performed for each variable. Only the univariate ANOVA for age was found to be significant p<0.05 (whether a participant considers themseveles healthy or not is influenced by mean age), and family size did not show a mean difference across 'health' (whether a participant considers themseveles healthy or not is NOT influenced by mean family size). 9 tests total were performed (1 manova + 2 anovas + 8 t-tests). The probability of at least one type 1 error (if unadjusted) is ~0.431. The Boneferroni adjusted signifiance level I should use if I want to keep the overall type 1 error rate at 0.05 is 0.0045. With this adjusted significance, the hypothesis test for age is still significant, while for family it is still insignificant. MANOVA assumes a multivariate normal distribution and that all groups have the same variance/covariance, and it is likely that these restrictive assumptions were not met within the dataset used.*
+```{r, error=TRUE}
+man1 <- manova(cbind(age, family)~health, data=data2)
+summary(man1)
+summary.aov(man1) ##get univariate ANOVAs from MANOVA object
+
+data2%>% group_by(health)%>%summarize(mean(age),mean(family))
+
+# post hoc t-tests for all 2 ANOVAs
+pairwise.t.test(data2$age, data2$health, p.adj = "none")
+pairwise.t.test(data2$family, data2$health, p.adj = "none")
+
+# 1 manova + 2 anovas + 8 (bc 4x2) t-tests= 11 tests
+
+#At least one type 1 error
+1-(1-.05)^11
+# or: 1 - ((0.95)^9)
+
+#bonferroni correction
+0.05/11
+
+#assumptions
+library(rstatix)
+
+group <- data2$health
+DVs <- data2%>%select(age,family)
+
+#Test multivariate normality for each group (null: assumption met)
+sapply(split(DVs,group), mshapiro_test)
+
+#If any p<.05, stop. If not, test homogeneity of covariance matrices
+# ^^ (not met but I want to test homogeneity just to verify)
+
+#Box's M test (null: assumption met)
+box_m(DVs, group)
+
+#View covariance matrices for each group
+lapply(split(DVs,group), cov)
+
+```
+
+
+#### 2. Randomization test.
+
+*A chi-squared randomization test was performed on the dataset between the categorical variables: 'health' and 'education'. The null hypothesis was that whether a person considers themselves healthy or not is independent from their education level (i.e. health and education are independent). The alternative hypothesis was that whether a person considers themselves healthy or not is dependent on their education level (i.e. health and education are not independent). This chi-square test provided evidence that the proportion of participants who believe they are healthy (or not) did significantly differ between the 7 levels of education (X-squared = 65.468, df = 6, p-value = 3.462e-12). Thus, the null hypothesis can be rejected. From the plotted visualization of chi-squared, it appears that most participants who belive they are not healthy have no formal education or only highschool level education.*
+
+```{r}
+#randomization test Chi-Squared (categorical vs categorical)
+table(data2$health, data2$education) 
+chisq.test(table(data2$health, data2$education))
+
+#visualization
+ggplot(data2) + aes(x = education, fill = health) + geom_bar() + scale_fill_hue() +     theme_minimal()+ labs(title = "Distribution of Health by Education Level", subtitle = "Chi-Squared Test",caption = "Test Statistics: X-squared = 65.468, df = 6, p-value = 3.462e-12")
+
+```
+
+#### 3. Build a linear regression model predicting one of your response variables from at least 2 other variables, including their interaction. Mean-center any numeric variables involved in the interaction.
+
+*Interpretting the coefficients: Controlling for age, there is a ~0.110 difference in insurance status between between patients who consider themselves healthy versus those who do not. Controlling for insurance status, there is a ~0.0097 difference in mean-centered ages between patients who consider themselves healthy versus those who do not. Controlling for age, for every 1 unit increase in insurance status, health status increases by 0.002424 on average. There is not a significant interaction between insurance status and age.*
+
+*The significance of the results did not change even after comparison with robust SEs. This makes sense since there was very little difference between original SE and the robust SE values. The p-value for insurance decreased from original to robust SEs due to an increase in t-value. For mean centred age, the t-value increased and as a result the p-value decreased slightly from original to robust SE. When SEs decreases, t value increases, and p value decreases. According to the adjusted R-squared value of 0.03398, my model explains 3.4% of the variation in the outcome (not a very good model).The assumptions for linearity, normality, and homoskedasticity were not met.*
+
+```{r}
+#Mean centering and dummy coding variables
+data3 <- data2%>% mutate(health_=ifelse(health=="yes", 1, 0))
+data3 <- data3%>% mutate(insurance=ifelse(insurance=="yes", 1, 0))
+data3 <- data3%>% mutate(gender=ifelse(gender=="female", 1, 0))
+data3 <- data3%>% mutate(married=ifelse(married=="yes", 1, 0))
+data3 <- data3%>% mutate(age_c=age-mean(age, na.rm=T))
+data3 <- data3%>% mutate(family_c=family-mean(family, na.rm=T))
+
+head(data3)
+```
+
+
+```{r}
+#Linear regression model with interactions
+linfit <- lm(health_~insurance*age_c, data = data3)
+#coef estimates
+summary(linfit)
+
+#plot the regression
+ggplot(data3, aes(x=age_c, y=insurance,group=health))+geom_point(aes(color=health))+geom_smooth(method="lm",se=F,fullrange=T,aes(color=health))+ theme(legend.position=c(.9,.3), legend.title= element_text(size=9),legend.text = element_text(size=8))+xlab("mean centered age")
+# H0 = the predictors of insurance and age do not explain any variation in health (true slope would be zero)
+# Ha=  the predictors of insurance and age do explain any variation in health (true slope is NOT zero) 
+```
+
+```{r}
+#Checking assumptions of linearity and homoskedasticity
+resids<-linfit$residuals
+fitvals<-linfit$fitted.values
+ggplot()+geom_point(aes(fitvals,resids))+geom_hline(yintercept=0, color='red')
+
+bptest(linfit) #H0: homoskedastic
+#^^ not homoskedastic!
+
+#normality assumption test
+ggplot()+geom_histogram(aes(resids), bins=30)
+
+ggplot()+geom_qq(aes(sample=resids))+geom_qq_line(aes(sample=resids, color='red')) + theme(legend.position = "none")
+
+ks.test(resids, "pnorm", sd=sd(resids))
+```
+
+
+```{r}
+#Normal-theory standard errors
+coeftest(linfit)
+
+#Robust standard errors
+coeftest(linfit, vcov = vcovHC(linfit))
+
+#Regression without interactions
+linfit2 <- lm(health_~insurance+gender+age_c, data = data3)
+summary(linfit2)
+
+#likelihood ratio test
+lrtest(linfit, linfit2)
+```
+
+
+#### 4. Rerun same regression with bootstrapped standard errors
+
+*To bootstrap SEs, I randomly sampled rows from the dataset with replacement.As SE increases, the t-value decreases and the p-value increases (and vice versa). The bootstrapped SE for the intercept is less than both the original and robust SE values which means that the t-value for it is greater and as a result the p-value is smaller for the intercept. The bootstrapped SEs for insurance are greater than the original SEs and the robust SEs. The bootstrapped SEs for age_c and insurance:age_c are greater than the robust SEs but less than the original SEs.  Compared to the robust SEs’ t and p values, the bootstrapped t values will be greater and the p values will be lesser.*
+
+```{r}
+#Bootstrapped standard errors
+
+samp_distn<-replicate(5000, {
+ boot_dat<-boot_dat<-data3[sample(nrow(data3),replace=TRUE),]
+ bootfit<-lm(health_~insurance*age_c, data = boot_dat)
+ coef(bootfit)
+})
+
+## Estimated SEs
+samp_distn%>%t%>%as.data.frame%>%summarize_all(sd)
+```
+
+#### 5. Fit a logistic regression model predicting a binary variable from at least two explanatory variables
+
+*I fit a logistic regression model predicting the binary variable 'health' from insurance, family, age, and gender. The predicted odds of believing that you are healthy when you are a male with no health insurance and when mean centered age and family are 0 = 0.833. When holding family_c, age_c, and gender constant, having insurance multiplies the predicted odds of considering yourself to be healthy by a factor of 1.60. When holding insurance, age_c, and gender constant, increasing mean centered family size by 1 multiplies the predicted odds of considering yourself to be healthy by a factor of 0.96. When holding insurance, family_c, and gender constant, increasing mean centered age by 1 multiplies the predicted odds of considering yourself to be healthy by a factor of 0.97. When holding family_c, age_c, and insurance constant, being female multiplies the predicted odds of considering yourself to be healthy by a factor of 0.69.*
+
+*According to the calculated accuracy, this model correctly predicts 58.3% of the outcomes in the data overall. The model correctly predicts 57.4% of cases as positive (health=yes) out of the total number of positives (sensitivity).  The model correctly predicts 59.3% of cases as negative (health=no) out of the total number of negatives (specificity). In regards to precision in this model, 58.5% of the predicted as positive cases are true positives (people predicited as healthy who actually consider themselves healthy).*
+
+*The AUC (0.617) indicates that the model is a poor predictor of new data (and poor at distinguishing between whether a participant considers themselves healthy or not). The ROC curve is not very good (if it could predict perfectly, TPR would be 1 while FPR would be 0 for any cutoff except 100%) but it isn’t a straight line either. This indicates that it is possible to distinguish between positive and negatives cases, just poorly and with low accuracy. The AUC of the model was found to be 0.617 and the calculated AUC was also found to be 0.617 (both were equivalent)*
+
+```{r}
+#Logistic regression
+logfit<-glm(health_~insurance+family_c+age_c+gender, data=data3, family="binomial")
+coeftest(logfit)
+
+#Since you always exponentiate coefficients before interpretation
+exp(coef(logfit))%>%data.frame()
+
+#confusion matrix
+prob <- predict(logfit, type="response")
+pred<-ifelse(prob>.5,1,0)
+
+table(prediction=pred, truth=data3$health_)%>%addmargins
+
+#accuracy
+(373+361)/1258 #0.5834658
+
+#sensitivity (TPR)
+361/629 # 0.5739269	
+
+#specificity (TNR)
+373/629 # 0.5930048
+
+#Recall/Precision (PPV)
+361/617 #0.5850891
+
+#AUC by hand
+class_diag(prob,data3$health_) #auc=0.6166815
+
+```
+
+
+```{r}
+#Density of log-odds plot
+data4 <- data3
+data4$logit <- predict(logfit)
+ggplot(data4, aes(logit, fill=health)) + geom_density(alpha=0.3) + geom_vline(xintercept=0, lty=2)
+
+#ROC curve and AUC
+data5 <- data3%>%mutate(probability=predict(logfit, type = "response"), prediction=ifelse(prob>.5,1,0))
+
+classify<-data5%>%transmute(probability,prediction,truth=health)
+
+ROCplot<-ggplot(classify)+geom_roc(aes(d=truth,m=probability), n.cuts=0) + geom_segment(aes(x=0,y=0,xend=1,yend=1),lty=2)
+ROCplot
+
+#auc
+calc_auc(ROCplot) #same as in-sample auc metric
+```
+
+#### 6. Perform a logistic regression predicting the same binary response variable from ALL of the rest of your variables
+
+*A logistic regression predicting the binary variable 'health' was performed from all of the other explanatory variables. After fitting the model, it was found that this model correctly predicts 61.4% of the outcomes in the data overall. The model correctly predicts 63.8% of cases as positive (health=yes) out of the total number of positives (sensitivity).  The model correctly predicts 59.0% of cases as negative (health=no) out of the total number of negatives (specificity). In regards to precision in this model, 60.8% of the predicted as positive cases are true positives (people predicited as healthy who actually consider themselves healthy). AUC was found to be 0.672 which means that this model is a poor predictor of new data (and poor at distinguishing between whether a participant considers themselves healthy or not).*
+
+*After performing the 10-fold CV using all the variables, the out-of sample classification diagnostics of accuracy, sensitivity, specificity and precision were found to be  0.599, 0.625, 0.576, and 0.598 respectively. The AUC was found to be 0.657 which is slightly less than the in-sample AUC metric of 0.672. Because the change is so slight, the model is still a poor predictor of new data (and poor at distinguishing between whether a participant considers themselves healthy or not). All out-of-sample diagnostic metrics were less than in-sample ones.*
+
+*After performing the 10-fold CV using only the variables that lasso retained (age_c, gender, bachelor_, none_, phd_, ged_, and afam_), the accuracy, sensitivity, specificity and precision were found to be 0.606, 0.493, 0.720, and 0.643 respectively. The AUC was found to be 0.659 which is slightly better than the AUC from the 10-fold CV using all variables (0.657) but still less than in-sample logistic regression of all variables (AUC=0.672). However, after performing the 10-fold CV using only the variables that lasso selected, the AUC(0.659) was better than the original logistic regression from Q5 with variables insurance, family, age, and gender (AUC=0.617). Throughout the entire project, the AUC indicated no change from "poor" predictor which means that all models are poor predictors of new data (and poor at distinguishing between whether a participant considers themselves healthy or not). *
+
+```{r}
+#dummy code ethnicity and education 
+head(data3)
+data3 <- data3%>% mutate(cauc_=ifelse(ethnicity=="cauc", 1, 0))
+data3 <- data3%>% mutate(afam_=ifelse(ethnicity=="afam", 1, 0))
+data3 <- data3%>% mutate(other_=ifelse(ethnicity=="other", 1, 0))
+data3 <- data3%>% mutate(bachelor_=ifelse(education=="bachelor", 1, 0))
+data3 <- data3%>% mutate(none_=ifelse(education=="none", 1, 0))
+data3 <- data3%>% mutate(highschool_=ifelse(education=="highschool", 1, 0))
+data3 <- data3%>% mutate(phd_=ifelse(education=="phd", 1, 0))
+data3 <- data3%>% mutate(master_=ifelse(education=="master", 1, 0))
+data3 <- data3%>% mutate(otheredu_=ifelse(education=="other", 1, 0))
+data3 <- data3%>% mutate(ged_=ifelse(education=="ged", 1, 0))
+```
+
+
+
+```{r, error=TRUE}
+#Logistic regression
+logfit2<-glm(health_~age_c+family_c+gender+bachelor_+none_+highschool_+ phd_+master_+otheredu_+ged_+cauc_+afam_+ other_+ married+ insurance, data=data3, family="binomial")
+
+coeftest(logfit2)
+
+#Since you always exponentiate coefficients before interpretation
+exp(coef(logfit2))%>%data.frame()
+
+#confusion matrix
+prob2 <- predict(logfit2, type="response")
+pred2<-ifelse(prob2>.5,1,0)
+
+table(prediction=pred2, truth=data3$health_)%>%addmargins
+
+#accuracy
+(371+401)/1258 #0.6136725
+
+#sensitivity (TPR)
+401/629 # 0.6375199
+
+#specificity (TNR)
+371/629 # 0.5898251	
+
+#Recall/Precision (PPV)
+401/659 # 0.6084977
+
+#AUC by hand
+class_diag(prob2,data3$health_) #auc=0.6722496
+```
+
+
+```{r, error=TRUE}
+#10-fold CV with the same model
+set.seed(1234)
+k=10 #choose number of folds
+data7<-data3[sample(nrow(data3)),] #randomly order rows
+folds<-cut(seq(1:nrow(data3)),breaks=k,labels=F) #create folds
+
+
+diags2<-NULL
+for(i in 1:k){
+## Create training and test sets
+train2<-data7[folds!=i,]
+test2<-data7[folds==i,]
+truth2<-test2$health_ ## Truth labels for fold i
+## Train model on training set (all but fold i)
+train_fit2<- glm(health_ ~ age_c+family_c+gender+ bachelor_ +none_+highschool_+ phd_+master_+otheredu_+ged_+cauc_+afam_+ other_+ married+ insurance, data=train2, family="binomial")
+## Test model on test set (fold i)
+probs2<-predict(train_fit2,newdata = test2,type="response")
+## Get diagnostics for fold i
+diags2<-rbind(diags2,class_diag(probs2,truth2))
+}
+
+#report average out-of-sample classification diagnostics
+diags2%>%summarize_all(mean)
+```
+
+
+```{r}
+#Perform LASSO on the same model/variables
+lasfit <- glm(health_ ~ -1 + age_c+family_c+gender+ bachelor_ +none_+highschool_+ phd_+master_+otheredu_+ged_+cauc_+afam_+ other_+ married+ insurance, data=data3, family="binomial")
+
+y<-as.matrix(data3$health_)
+x<-model.matrix(lasfit)
+x<-scale(x)
+cv<-cv.glmnet(x,y, family='binomial')
+lasso<-glmnet(x,y,family="binomial",lambda=cv$lambda.1se)
+#coef(cv)
+coef(lasso)
+```
+
+
+
+```{r}
+#cross-validate lasso
+set.seed(1234)
+k=10
+
+data6 <- data3 %>% sample_frac #put rows of dataset in random order
+folds3 <- ntile(1:nrow(data3),n=10) #create fold labels
+
+diags3<-NULL
+for(i in 1:k){
+train3 <- data6[folds!=i,] #create training set (all but fold i)
+test3 <- data6[folds==i,] #create test set (just fold i)
+truth3 <- test3$health_ #save truth labels from fold i
+fit3 <- glm(health_ ~ -1 + age_c+gender+ bachelor_ +none_+ phd_+ged_+afam_, data=train3, family="binomial")
+probs3 <- predict(fit3, newdata=test3, type="response")
+diags3<-rbind(diags3,class_diag(probs3,truth3))
+}
+
+diags3%>%summarize_all(mean) #auc improved a little from out-of sample CV with varaibles not selected by lasso
+```
+

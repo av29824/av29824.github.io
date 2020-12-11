@@ -1,0 +1,195 @@
+---
+title: "Project 1"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+date: "2020-12-11"
+---
+## Andrea Vanags (av29824)
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Introduction:
+#### The two datasets I have chosen for this project contain information about suicides and earthquakes worldwide from 1985 to 2016. The suicides dataset contains qualitative (ex: sex, age, generation, countries) and quantitative data (ex: year, number of suicides, country population, gdp for year and per capita). The earthquakes dataset countains mostly quantitative values (ex:date, longitude, latitude, depth, magnitude), some qualitative (ex: ID, status, type) and quite a few N/As. Both datasets were aquired from Kaggle.com. 
+####No significant associations are expected, but a spurrious correlation between number of earthquakes and number of suicides each year would be an intresting result. I chose these datasets because I thought it would be fun if I could manage to correlate the data in some significant way, and I also liked the idea of joining the datasets by 'year' as the shared variable. 
+
+
+```{r cars, warning=FALSE}
+#this code lets me knit:
+options(repos=structure(c(CRAN="http://cran.r-project.org")))
+options(repos="https://cran.rstudio.com" )
+install.packages("pscl", repos = "https://cran.rstudio.com")
+```
+
+
+
+```{r, warning=FALSE}
+#install.packages("tidyverse")
+library(tidyverse)
+library(readxl)
+#install.packages("ggrepel")
+library(ggrepel)
+#install.packages("devtools")
+devtools::install_github("slowkow/ggrepel")
+library(devtools)
+#install_github("thomasp85/patchwork")
+#install.packages("ggplot2")
+library(ggplot2)
+library(cluster)
+library(dplyr)
+library(patchwork) # To display 2 charts together
+#install.packages("hrbrthemes")
+library(hrbrthemes)
+import_roboto_condensed()
+```
+
+
+```{r}
+#datasets: 
+suicides_try = read.csv("suicides_try.csv")
+head(suicides_try)
+
+earthqks_try = read.csv("earthqks_try.csv")
+head(earthqks_try)
+
+```
+
+### Joining/Merging and Wrangling
+
+#### I wrangled up my datsets before and after joining in order to make the join easier. I joined the suicides and earthquakes datset by the common variable 'year' and performed a 'full_join' in order to keep all aspects of each dataset since I had already wrangled them into new variables/the variables I wanted to keep. Originally, the earthquake dataset ('earthqks_try') had 23,412 rows and 21 columns. Since I'm only interested in total number of earthquakes per year and their average magnitude each year, I separated 'Date' into day, month, year in order to keep year and then dropped columns 2:8 as well as 10:21.
+#### In the original suicudes dataset (suicides_try) there was 27,820 rows and 12 columns. I kept 'country','year', calculated the sum of total suicides each country had per specific year, and dropped the rest of the variables (such as sex, age, generation, etc). No potential problems with the dropped variables are expected to occur, and they were dropped in order to have an easy to view/manipulate set of variables. 
+####After wrangling and joining, the new dataset ('joined') has 2,321 rows and 5 columns.  
+```{r, warning=FALSE}
+#nrow(earthqks_try) # 23412 rows
+#ncol(earthqks_try) #21 columns
+#nrow(suicides_try) #27820 rows
+#ncol(suicides_try) #12 columns
+
+#earthquake wrangling
+earthqks_try %>% separate(Date,into=c("day", "month", "year")) -> earthqks_j
+head(earthqks_j)
+earthqks_j %>% group_by(year) %>% summarize(avg_mag = mean(Magnitude, na.rm=T), total_earthqks = n_distinct(ID)) -> earthqks_join
+earthqks_join%>%  na.omit %>% mutate_if(is.character, as.double)-> earthqks_join_true
+earthqks_join_true %>% mutate_if(is.integer, as.double) -> earthqks_join_true
+head(earthqks_join_true)
+earthqks_join_true %>% filter(year > 1984) -> earthqks_join_true2
+
+#suicide wrangling
+suicides_try %>% select(suicides_no, year, country) %>% group_by(country,year) %>% summarize(total_suicides_country = sum(suicides_no)) -> suicides_join #the wrangled suicides dataset i want to use in my join
+
+#join datasets:
+full_join(suicides_join, earthqks_join_true2) -> joined
+head(joined)
+#nrow(joined) #2321 rows
+#ncol(joined) #5 columns
+```
+### Tidying: Rearranging Wide/Long
+
+#### The variables I'm interested in are already tidy, so I will show that I know how to use tidyr functions by pivotting all varibales that contain an underscore longer in order to get them into rows. To reverse this I then pivotted wider so that the variables containing underscores are once again established as columns for easier viewing/manipulation. 
+```{r}
+#pivotting demonstration with new our variables:
+joined %>% pivot_longer(contains("_")) -> pivotlong_ex
+head(pivotlong_ex)
+pivotlong_ex%>% pivot_wider(names_from="name", values_from="value")->pivotwide_ex
+head(pivotwide_ex)
+```
+
+### More Wrangling!
+```{r, warning=FALSE}
+joined %>% group_by(year) %>% mutate(total_suicides_world= sum(total_suicides_country)) -> joined1 #added total suicides around the world for each year as a new variable
+head(joined1)
+joined1  %>% arrange(desc(total_suicides_country))%>% select(total_suicides_country, country) #shows country with greatest amount of suicides overall
+
+joined1 %>% group_by(country) %>% summarize(total_suicides = sum(total_suicides_country), minimum_suicides = min(total_suicides_country), maximum_suicides=max(total_suicides_country)) #RStandard deviation, minimum, and maximum total suicides for each country
+joined%>%summarize(n_distinct(country))%>% nrow() #101 distinct countries in dataset
+
+joined1%>% ungroup() %>% na.omit %>% select_if(is.numeric) %>% summarize(cor(total_earthqks, total_suicides_world)) #computed correlation between avg magnitudes and number of suicides in the world from 1985 to 2016
+
+joined%>%na.omit %>% select_if(is.numeric) %>% summarize(cor(total_earthqks, total_suicides_country)) #correlation between total earthquakes and number of suicides in each country
+
+```
+
+### Wrangling Summary:
+#### The above datasets were wrangled before joining in order to make it easier for me to see if the join had indeed been successful. All six core dplyr functions were used, and five unique summary functions were used (min,max,n_distinct,mean, and sum). Variables avg_mag, total_earthqks, total_suicides_country, and total_suicides_world were created and made into columns to describe the mean earthquake magnitude each year, the summed number of earthquakes around the world each year, the total number of suicides in each country every year, and the number of suicides in the world each year respectively. I was able to group by categorical variable 'country'. The correlation between total number of earthquakes and total suicides each year was found as well as the correlation between total earthquakes and total suicides in each specific country every year. Both correlations were weak.
+
+### Visualizing
+
+#### A heatmap of the correlations between all numeric variables was created. All numeric varibales (excluding 'year') have low correlations below 0.25. Thus, it can be assumed that the number of earthquakes and suicides recorded in this datset have no associations and are not even spuriously correlated by random chance. The highest relative correlation vissible is total_suicides_world and total_earthqks at 0.11. The lowest is total_earthqks and total_suicides_world.
+
+```{r}
+joined1%>% ungroup()  %>% na.omit%>% select(avg_mag,total_suicides_country,total_earthqks, total_suicides_world) -> df
+cormat <- df %>% cor
+tidycor2 <- cormat %>% as.data.frame %>% rownames_to_column("var1") %>% pivot_longer(-1, names_to="var2", values_to="correlation")
+
+tidycor2 %>% ggplot(aes(var1, var2, fill= correlation))+ geom_tile() +
+scale_fill_gradient2(low="white",mid="pink",high="red")+ 
+geom_text(aes(label=round(correlation,2)),color = "black", size = 4)+ 
+theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+coord_fixed() #heat map
+```
+
+#### The first ggplot looks at the number of total earthquakes and suicides worldwide from the years 1985 to 2016 on a scatterplot. The points of the scatterplot are labeled with the year associated to it, but it decreases the accuracy and overall neatness of the plot since the labels are quite large and can block other labels. I tried geom_label_repel but it kept making the labels disappear instead of making them easier to read so I kept it as is. I added more tick marks to the y-axis for better visualization of number of suicides. From this graph, it can be seen that 2011 is a yearl outlier with largest number of earthquakes at around ~725, while 2016 is an outlier for having the least amount of suicides recorded at around ~ 21,000. Plot #1 is great for quick visualization of each specific year whereas Plot #2 (shown further below) shows a neater, more general demonstration of the same variables on a double line graph. 
+```{r}
+#plot 1:
+ggplot(data = joined1, aes(x = total_earthqks , y = total_suicides_world)) + geom_point()  + ggtitle("Total Earthquakes and Suicides from 1985 to 2016") + geom_label(aes(x=total_earthqks,y=total_suicides_world,label= year), size = 3) + labs(y= "Number of Suicides", x = "Number of Earthquakes") + theme(legend.position = "none") + scale_y_continuous(breaks=seq(0,260000,20000))
+```
+
+#### The second ggplot shows the exact same varibales as plot #1, just in a double line graph format. From this graph, the difference in scale is more visible between the two variables, as well as yearly progression in total numbers of earthquakes and suicides respectively. A strong drop in suicides is seen in 2016 just as in the previous plot, and this may be due to the dataset being compiled before 2016 was over, thus cutting the total number of siuicides which actually ended up occuring. From this graph, it is easy to see that the number of suicides increased from just before 1990 until 2000 where it stabilized before slowly decreasing over time again. The number of earthquakes, however, remains more or less stable throughout 1985 to 2016 with hardly any steep increases or decreases in cases. There does not seem to be any visible associations between the graphs. 
+```{r, warning=FALSE}
+# joined plot 2
+ggplot(joined1, aes(x=year)) +
+  geom_line( aes(y=total_earthqks), size=2, color="red") + 
+  geom_line( aes(y=total_suicides_world / 100), size=2, color="blue") +
+  scale_y_continuous(
+    # Features of the first axis
+    name = "Number of Earthquakes",
+    # Add a second axis and specify its features
+    sec.axis = sec_axis(~.*100, name="Number of Suicides")
+  ) + 
+  theme_ipsum() +
+  theme(
+    axis.title.y = element_text(color = "red", size=13),
+    axis.title.y.right = element_text(color = "blue", size=13)
+  ) +
+  ggtitle("Earthquakes and Suicides From 1985 to 2016")
+```
+
+#### This third plot shows the top ten countries with the most suicides in 2008. I picked 2008 because of the economic recession in the U.S. (economic depressions and mental ones often go hand in hand), so I was curious to see how it would track worldwide. This plot shows that Japan, Russian Federation, and the U.S. have much higher cases of suicides compared to the other top 7 countries, and that the Russian Federation (Russia) holds the highest values overall. 
+```{r}
+#plot3
+joined1  %>% group_by(country)%>% arrange(desc(total_suicides_country)) %>% filter(year==2008) -> top_ten
+top_ten %>%as.data.frame()-> top_ten1
+
+top_ten1%>% slice(1:10)-> top_ten2
+ggplot(top_ten2,aes(country,total_suicides_country, fill=country))+labs(x="Country", y="Total Number of Suicides", title= "Countries w/ Highest Suicides in 2008") + geom_bar(stat="summary") +scale_y_continuous( breaks=seq(4000, 40000, by=5000)) + geom_errorbar(stat="summary", width=0.5)+  scale_fill_brewer(palette= "Paired") + 
+theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+
+### Dimensionality Reduction
+
+#### k-means/PAM clustering was performed on the numeric variables: total_suicides_country, total_suicides_world, total_earthqks, and avg_mag. Averag sillhouette width is about 0.41 which means that the structure is weak and could be artificial, thus not an accurate clustering representation. k was found to be 2 as it showed the highest, tightest clustering when plotted. Correlations between all variables were weak. The highest relative correlation between them was total_suicides_world & total_earthquakes. All the points on the plots are very randomly spaced and don't show any visible clustering groups. No spurious correlations were found between the two datasets in the project.
+
+```{r, warning=FALSE, cache=FALSE}
+library(tidyverse)
+library(cluster)
+#install.packages("GGally")
+library(GGally)
+join_dat<-joined1 %>% ungroup() %>% select(total_suicides_country,total_suicides_world,total_earthqks, avg_mag)
+sil_width<-vector()
+for(i in 2:10){  
+  pot_fit <- pam(join_dat, k = i)  
+  sil_width[i] <- pot_fit$silinfo$avg.width  
+}
+joined1 %>% ungroup%>%select(total_suicides_country,total_suicides_world,total_earthqks,avg_mag) %>% scale %>% pam(k=2) -> pam_cluster
+
+ggplot()+geom_line(aes(x=1:10,y=sil_width))+scale_x_continuous(name="k",breaks=1:10)# 2 on the graph is the highest and therefore the best, tightest cluster!
+pam_cluster$silinfo$avg.width #avg width is 0.41 (weak/artificial)
+```
+
+
+```{r, warning=FALSE}
+joined1%>%ungroup%>% mutate(cluster=as.factor(pam_cluster$clustering)) %>% ggpairs(columns = c("total_suicides_country","total_suicides_world","total_earthqks","avg_mag"), aes(color=cluster)) 
+```

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Andrea Vanags-Louredo" />
+    
+    <link rel="shortcut icon" type="image/x-icon" href="../../img/favicon.ico">
+    <title>Project 1</title>
+    <meta name="generator" content="Hugo 0.79.0" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="../../css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="../../"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="../../post/">BLOG</a></li>
+        
+        <li><a href="../../projects/">PROJECTS</a></li>
+        
+        <li><a href="../../resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="../../project/project1/">Project 1</a></strong>
+          </h3>
+        </div>
+ 
+<div class="blog-title">
+          <h4>
+         December 11, 2020 
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<div id="andrea-vanags-av29824" class="section level2">
+<h2>Andrea Vanags (av29824)</h2>
+<div id="introduction" class="section level3">
+<h3>Introduction:</h3>
+<div id="the-two-datasets-i-have-chosen-for-this-project-contain-information-about-suicides-and-earthquakes-worldwide-from-1985-to-2016.-the-suicides-dataset-contains-qualitative-ex-sex-age-generation-countries-and-quantitative-data-ex-year-number-of-suicides-country-population-gdp-for-year-and-per-capita.-the-earthquakes-dataset-countains-mostly-quantitative-values-exdate-longitude-latitude-depth-magnitude-some-qualitative-ex-id-status-type-and-quite-a-few-nas.-both-datasets-were-aquired-from-kaggle.com." class="section level4">
+<h4>The two datasets I have chosen for this project contain information about suicides and earthquakes worldwide from 1985 to 2016. The suicides dataset contains qualitative (ex: sex, age, generation, countries) and quantitative data (ex: year, number of suicides, country population, gdp for year and per capita). The earthquakes dataset countains mostly quantitative values (ex:date, longitude, latitude, depth, magnitude), some qualitative (ex: ID, status, type) and quite a few N/As. Both datasets were aquired from Kaggle.com.</h4>
+</div>
+<div id="no-significant-associations-are-expected-but-a-spurrious-correlation-between-number-of-earthquakes-and-number-of-suicides-each-year-would-be-an-intresting-result.-i-chose-these-datasets-because-i-thought-it-would-be-fun-if-i-could-manage-to-correlate-the-data-in-some-significant-way-and-i-also-liked-the-idea-of-joining-the-datasets-by-year-as-the-shared-variable." class="section level4">
+<h4>No significant associations are expected, but a spurrious correlation between number of earthquakes and number of suicides each year would be an intresting result. I chose these datasets because I thought it would be fun if I could manage to correlate the data in some significant way, and I also liked the idea of joining the datasets by 'year' as the shared variable.</h4>
+<pre class="r"><code>#this code lets me knit:
+options(repos=structure(c(CRAN=&quot;http://cran.r-project.org&quot;)))
+options(repos=&quot;https://cran.rstudio.com&quot; )
+install.packages(&quot;pscl&quot;, repos = &quot;https://cran.rstudio.com&quot;)</code></pre>
+<pre><code>## Installing package into &#39;/stor/home/av29824/R/x86_64-pc-linux-gnu-library/3.6&#39;
+## (as &#39;lib&#39; is unspecified)</code></pre>
+<pre class="r"><code>#install.packages(&quot;tidyverse&quot;)
+library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.0 ──</code></pre>
+<pre><code>## ✓ ggplot2 3.3.2     ✓ purrr   0.3.4
+## ✓ tibble  3.0.4     ✓ dplyr   1.0.1
+## ✓ tidyr   1.1.1     ✓ stringr 1.4.0
+## ✓ readr   1.3.1     ✓ forcats 0.5.0</code></pre>
+<pre><code>## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(readxl)
+#install.packages(&quot;ggrepel&quot;)
+library(ggrepel)
+#install.packages(&quot;devtools&quot;)
+devtools::install_github(&quot;slowkow/ggrepel&quot;)</code></pre>
+<pre><code>## Skipping install of &#39;ggrepel&#39; from a github remote, the SHA1 (4d0ef500) has not changed since last install.
+##   Use `force = TRUE` to force installation</code></pre>
+<pre class="r"><code>library(devtools)</code></pre>
+<pre><code>## Loading required package: usethis</code></pre>
+<pre class="r"><code>#install_github(&quot;thomasp85/patchwork&quot;)
+#install.packages(&quot;ggplot2&quot;)
+library(ggplot2)
+library(cluster)
+library(dplyr)
+library(patchwork) # To display 2 charts together
+#install.packages(&quot;hrbrthemes&quot;)
+library(hrbrthemes)
+import_roboto_condensed()</code></pre>
+<pre><code>## You will likely need to install these fonts on your system as well.
+## 
+## You can find them in [/stor/home/av29824/R/x86_64-pc-linux-gnu-library/3.6/hrbrthemes/fonts/roboto-condensed]</code></pre>
+<pre class="r"><code>#datasets: 
+suicides_try = read.csv(&quot;suicides_try.csv&quot;)
+head(suicides_try)</code></pre>
+<pre><code>##   country year    sex         age suicides_no population suicides.100k.pop
+## 1 Albania 1987   male 15-24 years          21     312900              6.71
+## 2 Albania 1987   male 35-54 years          16     308000              5.19
+## 3 Albania 1987 female 15-24 years          14     289700              4.83
+## 4 Albania 1987   male   75+ years           1      21800              4.59
+## 5 Albania 1987   male 25-34 years           9     274300              3.28
+## 6 Albania 1987 female   75+ years           1      35600              2.81
+##   country.year HDI.for.year gdp_for_year.... gdp_per_capita....      generation
+## 1  Albania1987           NA    2,156,624,900                796    Generation X
+## 2  Albania1987           NA    2,156,624,900                796          Silent
+## 3  Albania1987           NA    2,156,624,900                796    Generation X
+## 4  Albania1987           NA    2,156,624,900                796 G.I. Generation
+## 5  Albania1987           NA    2,156,624,900                796         Boomers
+## 6  Albania1987           NA    2,156,624,900                796 G.I. Generation</code></pre>
+<pre class="r"><code>earthqks_try = read.csv(&quot;earthqks_try.csv&quot;)
+head(earthqks_try)</code></pre>
+<pre><code>##        Date     Time Latitude Longitude       Type Depth Depth.Error
+## 1  1/2/1965 13:44:18   19.246   145.616 Earthquake 131.6          NA
+## 2  1/4/1965 11:29:49    1.863   127.352 Earthquake  80.0          NA
+## 3  1/5/1965 18:05:58  -20.579  -173.972 Earthquake  20.0          NA
+## 4  1/8/1965 18:49:43  -59.076   -23.557 Earthquake  15.0          NA
+## 5  1/9/1965 13:32:50   11.938   126.427 Earthquake  15.0          NA
+## 6 1/10/1965 13:36:32  -13.405   166.629 Earthquake  35.0          NA
+##   Depth.Seismic.Stations Magnitude Magnitude.Type Magnitude.Error
+## 1                     NA       6.0             MW              NA
+## 2                     NA       5.8             MW              NA
+## 3                     NA       6.2             MW              NA
+## 4                     NA       5.8             MW              NA
+## 5                     NA       5.8             MW              NA
+## 6                     NA       6.7             MW              NA
+##   Magnitude.Seismic.Stations Azimuthal.Gap Horizontal.Distance Horizontal.Error
+## 1                         NA            NA                  NA               NA
+## 2                         NA            NA                  NA               NA
+## 3                         NA            NA                  NA               NA
+## 4                         NA            NA                  NA               NA
+## 5                         NA            NA                  NA               NA
+## 6                         NA            NA                  NA               NA
+##   Root.Mean.Square           ID Source Location.Source Magnitude.Source
+## 1               NA ISCGEM860706 ISCGEM          ISCGEM           ISCGEM
+## 2               NA ISCGEM860737 ISCGEM          ISCGEM           ISCGEM
+## 3               NA ISCGEM860762 ISCGEM          ISCGEM           ISCGEM
+## 4               NA ISCGEM860856 ISCGEM          ISCGEM           ISCGEM
+## 5               NA ISCGEM860890 ISCGEM          ISCGEM           ISCGEM
+## 6               NA ISCGEM860922 ISCGEM          ISCGEM           ISCGEM
+##      Status
+## 1 Automatic
+## 2 Automatic
+## 3 Automatic
+## 4 Automatic
+## 5 Automatic
+## 6 Automatic</code></pre>
+</div>
+</div>
+<div id="joiningmerging-and-wrangling" class="section level3">
+<h3>Joining/Merging and Wrangling</h3>
+<div id="i-wrangled-up-my-datsets-before-and-after-joining-in-order-to-make-the-join-easier.-i-joined-the-suicides-and-earthquakes-datset-by-the-common-variable-year-and-performed-a-full_join-in-order-to-keep-all-aspects-of-each-dataset-since-i-had-already-wrangled-them-into-new-variablesthe-variables-i-wanted-to-keep.-originally-the-earthquake-dataset-earthqks_try-had-23412-rows-and-21-columns.-since-im-only-interested-in-total-number-of-earthquakes-per-year-and-their-average-magnitude-each-year-i-separated-date-into-day-month-year-in-order-to-keep-year-and-then-dropped-columns-28-as-well-as-1021." class="section level4">
+<h4>I wrangled up my datsets before and after joining in order to make the join easier. I joined the suicides and earthquakes datset by the common variable 'year' and performed a 'full_join' in order to keep all aspects of each dataset since I had already wrangled them into new variables/the variables I wanted to keep. Originally, the earthquake dataset ('earthqks_try') had 23,412 rows and 21 columns. Since I'm only interested in total number of earthquakes per year and their average magnitude each year, I separated 'Date' into day, month, year in order to keep year and then dropped columns 2:8 as well as 10:21.</h4>
+</div>
+<div id="in-the-original-suicudes-dataset-suicides_try-there-was-27820-rows-and-12-columns.-i-kept-countryyear-calculated-the-sum-of-total-suicides-each-country-had-per-specific-year-and-dropped-the-rest-of-the-variables-such-as-sex-age-generation-etc.-no-potential-problems-with-the-dropped-variables-are-expected-to-occur-and-they-were-dropped-in-order-to-have-an-easy-to-viewmanipulate-set-of-variables." class="section level4">
+<h4>In the original suicudes dataset (suicides_try) there was 27,820 rows and 12 columns. I kept 'country','year', calculated the sum of total suicides each country had per specific year, and dropped the rest of the variables (such as sex, age, generation, etc). No potential problems with the dropped variables are expected to occur, and they were dropped in order to have an easy to view/manipulate set of variables.</h4>
+</div>
+<div id="after-wrangling-and-joining-the-new-dataset-joined-has-2321-rows-and-5-columns." class="section level4">
+<h4>After wrangling and joining, the new dataset ('joined') has 2,321 rows and 5 columns.</h4>
+<pre class="r"><code>#nrow(earthqks_try) # 23412 rows
+#ncol(earthqks_try) #21 columns
+#nrow(suicides_try) #27820 rows
+#ncol(suicides_try) #12 columns
+
+#earthquake wrangling
+earthqks_try %&gt;% separate(Date,into=c(&quot;day&quot;, &quot;month&quot;, &quot;year&quot;)) -&gt; earthqks_j
+head(earthqks_j)</code></pre>
+<pre><code>##   day month year     Time Latitude Longitude       Type Depth Depth.Error
+## 1   1     2 1965 13:44:18   19.246   145.616 Earthquake 131.6          NA
+## 2   1     4 1965 11:29:49    1.863   127.352 Earthquake  80.0          NA
+## 3   1     5 1965 18:05:58  -20.579  -173.972 Earthquake  20.0          NA
+## 4   1     8 1965 18:49:43  -59.076   -23.557 Earthquake  15.0          NA
+## 5   1     9 1965 13:32:50   11.938   126.427 Earthquake  15.0          NA
+## 6   1    10 1965 13:36:32  -13.405   166.629 Earthquake  35.0          NA
+##   Depth.Seismic.Stations Magnitude Magnitude.Type Magnitude.Error
+## 1                     NA       6.0             MW              NA
+## 2                     NA       5.8             MW              NA
+## 3                     NA       6.2             MW              NA
+## 4                     NA       5.8             MW              NA
+## 5                     NA       5.8             MW              NA
+## 6                     NA       6.7             MW              NA
+##   Magnitude.Seismic.Stations Azimuthal.Gap Horizontal.Distance Horizontal.Error
+## 1                         NA            NA                  NA               NA
+## 2                         NA            NA                  NA               NA
+## 3                         NA            NA                  NA               NA
+## 4                         NA            NA                  NA               NA
+## 5                         NA            NA                  NA               NA
+## 6                         NA            NA                  NA               NA
+##   Root.Mean.Square           ID Source Location.Source Magnitude.Source
+## 1               NA ISCGEM860706 ISCGEM          ISCGEM           ISCGEM
+## 2               NA ISCGEM860737 ISCGEM          ISCGEM           ISCGEM
+## 3               NA ISCGEM860762 ISCGEM          ISCGEM           ISCGEM
+## 4               NA ISCGEM860856 ISCGEM          ISCGEM           ISCGEM
+## 5               NA ISCGEM860890 ISCGEM          ISCGEM           ISCGEM
+## 6               NA ISCGEM860922 ISCGEM          ISCGEM           ISCGEM
+##      Status
+## 1 Automatic
+## 2 Automatic
+## 3 Automatic
+## 4 Automatic
+## 5 Automatic
+## 6 Automatic</code></pre>
+<pre class="r"><code>earthqks_j %&gt;% group_by(year) %&gt;% summarize(avg_mag = mean(Magnitude, na.rm=T), total_earthqks = n_distinct(ID)) -&gt; earthqks_join</code></pre>
+<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
+<pre class="r"><code>earthqks_join%&gt;%  na.omit %&gt;% mutate_if(is.character, as.double)-&gt; earthqks_join_true
+earthqks_join_true %&gt;% mutate_if(is.integer, as.double) -&gt; earthqks_join_true
+head(earthqks_join_true)</code></pre>
+<pre><code>## # A tibble: 6 x 3
+##    year avg_mag total_earthqks
+##   &lt;dbl&gt;   &lt;dbl&gt;          &lt;dbl&gt;
+## 1    NA    5.8               1
+## 2  1965    6.01            339
+## 3  1966    6.04            234
+## 4  1967    6.00            255
+## 5  1968    6.08            305
+## 6  1969    6.01            323</code></pre>
+<pre class="r"><code>earthqks_join_true %&gt;% filter(year &gt; 1984) -&gt; earthqks_join_true2
+
+#suicide wrangling
+suicides_try %&gt;% select(suicides_no, year, country) %&gt;% group_by(country,year) %&gt;% summarize(total_suicides_country = sum(suicides_no)) -&gt; suicides_join #the wrangled suicides dataset i want to use in my join</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;country&#39; (override with `.groups` argument)</code></pre>
+<pre class="r"><code>#join datasets:
+full_join(suicides_join, earthqks_join_true2) -&gt; joined</code></pre>
+<pre><code>## Joining, by = &quot;year&quot;</code></pre>
+<pre class="r"><code>head(joined)</code></pre>
+<pre><code>## # A tibble: 6 x 5
+## # Groups:   country [1]
+##   country  year total_suicides_country avg_mag total_earthqks
+##   &lt;fct&gt;   &lt;dbl&gt;                  &lt;int&gt;   &lt;dbl&gt;          &lt;dbl&gt;
+## 1 Albania  1987                     73    5.90            505
+## 2 Albania  1988                     63    5.85            489
+## 3 Albania  1989                     68    5.84            480
+## 4 Albania  1992                     47    5.88            533
+## 5 Albania  1993                     73    5.89            466
+## 6 Albania  1994                     50    5.88            508</code></pre>
+<pre class="r"><code>#nrow(joined) #2321 rows
+#ncol(joined) #5 columns</code></pre>
+</div>
+</div>
+<div id="tidying-rearranging-widelong" class="section level3">
+<h3>Tidying: Rearranging Wide/Long</h3>
+<div id="the-variables-im-interested-in-are-already-tidy-so-i-will-show-that-i-know-how-to-use-tidyr-functions-by-pivotting-all-varibales-that-contain-an-underscore-longer-in-order-to-get-them-into-rows.-to-reverse-this-i-then-pivotted-wider-so-that-the-variables-containing-underscores-are-once-again-established-as-columns-for-easier-viewingmanipulation." class="section level4">
+<h4>The variables I'm interested in are already tidy, so I will show that I know how to use tidyr functions by pivotting all varibales that contain an underscore longer in order to get them into rows. To reverse this I then pivotted wider so that the variables containing underscores are once again established as columns for easier viewing/manipulation.</h4>
+<pre class="r"><code>#pivotting demonstration with new our variables:
+joined %&gt;% pivot_longer(contains(&quot;_&quot;)) -&gt; pivotlong_ex
+head(pivotlong_ex)</code></pre>
+<pre><code>## # A tibble: 6 x 4
+## # Groups:   country [1]
+##   country  year name                    value
+##   &lt;fct&gt;   &lt;dbl&gt; &lt;chr&gt;                   &lt;dbl&gt;
+## 1 Albania  1987 total_suicides_country  73   
+## 2 Albania  1987 avg_mag                  5.90
+## 3 Albania  1987 total_earthqks         505   
+## 4 Albania  1988 total_suicides_country  63   
+## 5 Albania  1988 avg_mag                  5.85
+## 6 Albania  1988 total_earthqks         489</code></pre>
+<pre class="r"><code>pivotlong_ex%&gt;% pivot_wider(names_from=&quot;name&quot;, values_from=&quot;value&quot;)-&gt;pivotwide_ex
+head(pivotwide_ex)</code></pre>
+<pre><code>## # A tibble: 6 x 5
+## # Groups:   country [1]
+##   country  year total_suicides_country avg_mag total_earthqks
+##   &lt;fct&gt;   &lt;dbl&gt;                  &lt;dbl&gt;   &lt;dbl&gt;          &lt;dbl&gt;
+## 1 Albania  1987                     73    5.90            505
+## 2 Albania  1988                     63    5.85            489
+## 3 Albania  1989                     68    5.84            480
+## 4 Albania  1992                     47    5.88            533
+## 5 Albania  1993                     73    5.89            466
+## 6 Albania  1994                     50    5.88            508</code></pre>
+</div>
+</div>
+<div id="more-wrangling" class="section level3">
+<h3>More Wrangling!</h3>
+<pre class="r"><code>joined %&gt;% group_by(year) %&gt;% mutate(total_suicides_world= sum(total_suicides_country)) -&gt; joined1 #added total suicides around the world for each year as a new variable
+head(joined1)</code></pre>
+<pre><code>## # A tibble: 6 x 6
+## # Groups:   year [6]
+##   country  year total_suicides_count… avg_mag total_earthqks total_suicides_wor…
+##   &lt;fct&gt;   &lt;dbl&gt;                 &lt;int&gt;   &lt;dbl&gt;          &lt;dbl&gt;               &lt;int&gt;
+## 1 Albania  1987                    73    5.90            505              126842
+## 2 Albania  1988                    63    5.85            489              121026
+## 3 Albania  1989                    68    5.84            480              160244
+## 4 Albania  1992                    47    5.88            533              211473
+## 5 Albania  1993                    73    5.89            466              221565
+## 6 Albania  1994                    50    5.88            508              232063</code></pre>
+<pre class="r"><code>joined1  %&gt;% arrange(desc(total_suicides_country))%&gt;% select(total_suicides_country, country) #shows country with greatest amount of suicides overall</code></pre>
+<pre><code>## Adding missing grouping variables: `year`</code></pre>
+<pre><code>## # A tibble: 2,321 x 3
+## # Groups:   year [32]
+##     year total_suicides_country country           
+##    &lt;dbl&gt;                  &lt;int&gt; &lt;fct&gt;             
+##  1  1994                  61420 Russian Federation
+##  2  1995                  60548 Russian Federation
+##  3  1996                  57511 Russian Federation
+##  4  1999                  56974 Russian Federation
+##  5  2001                  56958 Russian Federation
+##  6  2000                  56619 Russian Federation
+##  7  1993                  55846 Russian Federation
+##  8  2002                  55024 Russian Federation
+##  9  1997                  54746 Russian Federation
+## 10  1998                  51518 Russian Federation
+## # … with 2,311 more rows</code></pre>
+<pre class="r"><code>joined1 %&gt;% group_by(country) %&gt;% summarize(total_suicides = sum(total_suicides_country), minimum_suicides = min(total_suicides_country), maximum_suicides=max(total_suicides_country)) #RStandard deviation, minimum, and maximum total suicides for each country</code></pre>
+<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
+<pre><code>## # A tibble: 101 x 4
+##    country             total_suicides minimum_suicides maximum_suicides
+##    &lt;fct&gt;                        &lt;int&gt;            &lt;int&gt;            &lt;int&gt;
+##  1 Albania                       1970                0              170
+##  2 Antigua and Barbuda             11                0                2
+##  3 Argentina                    82219             1951             3289
+##  4 Armenia                       1905               53              130
+##  5 Aruba                          101                2               10
+##  6 Australia                    70111             1861             3027
+##  7 Austria                      50073             1201             2139
+##  8 Azerbaijan                    1656               47              317
+##  9 Bahamas                         93                1               11
+## 10 Bahrain                        463                0               43
+## # … with 91 more rows</code></pre>
+<pre class="r"><code>joined%&gt;%summarize(n_distinct(country))%&gt;% nrow() #101 distinct countries in dataset</code></pre>
+<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
+<pre><code>## [1] 101</code></pre>
+<pre class="r"><code>joined1%&gt;% ungroup() %&gt;% na.omit %&gt;% select_if(is.numeric) %&gt;% summarize(cor(total_earthqks, total_suicides_world)) #computed correlation between avg magnitudes and number of suicides in the world from 1985 to 2016</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   `cor(total_earthqks, total_suicides_world)`
+##                                         &lt;dbl&gt;
+## 1                                       0.110</code></pre>
+<pre class="r"><code>joined%&gt;%na.omit %&gt;% select_if(is.numeric) %&gt;% summarize(cor(total_earthqks, total_suicides_country)) #correlation between total earthquakes and number of suicides in each country</code></pre>
+<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
+<pre><code>## # A tibble: 101 x 2
+##    country             `cor(total_earthqks, total_suicides_country)`
+##    &lt;fct&gt;                                                       &lt;dbl&gt;
+##  1 Albania                                                    -0.292
+##  2 Antigua and Barbuda                                         0.259
+##  3 Argentina                                                   0.111
+##  4 Armenia                                                     0.164
+##  5 Aruba                                                       0.326
+##  6 Australia                                                  -0.257
+##  7 Austria                                                    -0.127
+##  8 Azerbaijan                                                 -0.300
+##  9 Bahamas                                                     0.175
+## 10 Bahrain                                                     0.436
+## # … with 91 more rows</code></pre>
+</div>
+<div id="wrangling-summary" class="section level3">
+<h3>Wrangling Summary:</h3>
+<div id="the-above-datasets-were-wrangled-before-joining-in-order-to-make-it-easier-for-me-to-see-if-the-join-had-indeed-been-successful.-all-six-core-dplyr-functions-were-used-and-five-unique-summary-functions-were-used-minmaxn_distinctmean-and-sum.-variables-avg_mag-total_earthqks-total_suicides_country-and-total_suicides_world-were-created-and-made-into-columns-to-describe-the-mean-earthquake-magnitude-each-year-the-summed-number-of-earthquakes-around-the-world-each-year-the-total-number-of-suicides-in-each-country-every-year-and-the-number-of-suicides-in-the-world-each-year-respectively.-i-was-able-to-group-by-categorical-variable-country.-the-correlation-between-total-number-of-earthquakes-and-total-suicides-each-year-was-found-as-well-as-the-correlation-between-total-earthquakes-and-total-suicides-in-each-specific-country-every-year.-both-correlations-were-weak." class="section level4">
+<h4>The above datasets were wrangled before joining in order to make it easier for me to see if the join had indeed been successful. All six core dplyr functions were used, and five unique summary functions were used (min,max,n_distinct,mean, and sum). Variables avg_mag, total_earthqks, total_suicides_country, and total_suicides_world were created and made into columns to describe the mean earthquake magnitude each year, the summed number of earthquakes around the world each year, the total number of suicides in each country every year, and the number of suicides in the world each year respectively. I was able to group by categorical variable 'country'. The correlation between total number of earthquakes and total suicides each year was found as well as the correlation between total earthquakes and total suicides in each specific country every year. Both correlations were weak.</h4>
+</div>
+</div>
+<div id="visualizing" class="section level3">
+<h3>Visualizing</h3>
+<div id="a-heatmap-of-the-correlations-between-all-numeric-variables-was-created.-all-numeric-varibales-excluding-year-have-low-correlations-below-0.25.-thus-it-can-be-assumed-that-the-number-of-earthquakes-and-suicides-recorded-in-this-datset-have-no-associations-and-are-not-even-spuriously-correlated-by-random-chance.-the-highest-relative-correlation-vissible-is-total_suicides_world-and-total_earthqks-at-0.11.-the-lowest-is-total_earthqks-and-total_suicides_world." class="section level4">
+<h4>A heatmap of the correlations between all numeric variables was created. All numeric varibales (excluding 'year') have low correlations below 0.25. Thus, it can be assumed that the number of earthquakes and suicides recorded in this datset have no associations and are not even spuriously correlated by random chance. The highest relative correlation vissible is total_suicides_world and total_earthqks at 0.11. The lowest is total_earthqks and total_suicides_world.</h4>
+<pre class="r"><code>joined1%&gt;% ungroup()  %&gt;% na.omit%&gt;% select(avg_mag,total_suicides_country,total_earthqks, total_suicides_world) -&gt; df
+cormat &lt;- df %&gt;% cor
+tidycor2 &lt;- cormat %&gt;% as.data.frame %&gt;% rownames_to_column(&quot;var1&quot;) %&gt;% pivot_longer(-1, names_to=&quot;var2&quot;, values_to=&quot;correlation&quot;)
+
+tidycor2 %&gt;% ggplot(aes(var1, var2, fill= correlation))+ geom_tile() +
+scale_fill_gradient2(low=&quot;white&quot;,mid=&quot;pink&quot;,high=&quot;red&quot;)+ 
+geom_text(aes(label=round(correlation,2)),color = &quot;black&quot;, size = 4)+ 
+theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+coord_fixed() #heat map</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+</div>
+<div id="the-first-ggplot-looks-at-the-number-of-total-earthquakes-and-suicides-worldwide-from-the-years-1985-to-2016-on-a-scatterplot.-the-points-of-the-scatterplot-are-labeled-with-the-year-associated-to-it-but-it-decreases-the-accuracy-and-overall-neatness-of-the-plot-since-the-labels-are-quite-large-and-can-block-other-labels.-i-tried-geom_label_repel-but-it-kept-making-the-labels-disappear-instead-of-making-them-easier-to-read-so-i-kept-it-as-is.-i-added-more-tick-marks-to-the-y-axis-for-better-visualization-of-number-of-suicides.-from-this-graph-it-can-be-seen-that-2011-is-a-yearl-outlier-with-largest-number-of-earthquakes-at-around-725-while-2016-is-an-outlier-for-having-the-least-amount-of-suicides-recorded-at-around-21000.-plot-1-is-great-for-quick-visualization-of-each-specific-year-whereas-plot-2-shown-further-below-shows-a-neater-more-general-demonstration-of-the-same-variables-on-a-double-line-graph." class="section level4">
+<h4>The first ggplot looks at the number of total earthquakes and suicides worldwide from the years 1985 to 2016 on a scatterplot. The points of the scatterplot are labeled with the year associated to it, but it decreases the accuracy and overall neatness of the plot since the labels are quite large and can block other labels. I tried geom_label_repel but it kept making the labels disappear instead of making them easier to read so I kept it as is. I added more tick marks to the y-axis for better visualization of number of suicides. From this graph, it can be seen that 2011 is a yearl outlier with largest number of earthquakes at around ~725, while 2016 is an outlier for having the least amount of suicides recorded at around ~ 21,000. Plot #1 is great for quick visualization of each specific year whereas Plot #2 (shown further below) shows a neater, more general demonstration of the same variables on a double line graph.</h4>
+<pre class="r"><code>#plot 1:
+ggplot(data = joined1, aes(x = total_earthqks , y = total_suicides_world)) + geom_point()  + ggtitle(&quot;Total Earthquakes and Suicides from 1985 to 2016&quot;) + geom_label(aes(x=total_earthqks,y=total_suicides_world,label= year), size = 3) + labs(y= &quot;Number of Suicides&quot;, x = &quot;Number of Earthquakes&quot;) + theme(legend.position = &quot;none&quot;) + scale_y_continuous(breaks=seq(0,260000,20000))</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+</div>
+<div id="the-second-ggplot-shows-the-exact-same-varibales-as-plot-1-just-in-a-double-line-graph-format.-from-this-graph-the-difference-in-scale-is-more-visible-between-the-two-variables-as-well-as-yearly-progression-in-total-numbers-of-earthquakes-and-suicides-respectively.-a-strong-drop-in-suicides-is-seen-in-2016-just-as-in-the-previous-plot-and-this-may-be-due-to-the-dataset-being-compiled-before-2016-was-over-thus-cutting-the-total-number-of-siuicides-which-actually-ended-up-occuring.-from-this-graph-it-is-easy-to-see-that-the-number-of-suicides-increased-from-just-before-1990-until-2000-where-it-stabilized-before-slowly-decreasing-over-time-again.-the-number-of-earthquakes-however-remains-more-or-less-stable-throughout-1985-to-2016-with-hardly-any-steep-increases-or-decreases-in-cases.-there-does-not-seem-to-be-any-visible-associations-between-the-graphs." class="section level4">
+<h4>The second ggplot shows the exact same varibales as plot #1, just in a double line graph format. From this graph, the difference in scale is more visible between the two variables, as well as yearly progression in total numbers of earthquakes and suicides respectively. A strong drop in suicides is seen in 2016 just as in the previous plot, and this may be due to the dataset being compiled before 2016 was over, thus cutting the total number of siuicides which actually ended up occuring. From this graph, it is easy to see that the number of suicides increased from just before 1990 until 2000 where it stabilized before slowly decreasing over time again. The number of earthquakes, however, remains more or less stable throughout 1985 to 2016 with hardly any steep increases or decreases in cases. There does not seem to be any visible associations between the graphs.</h4>
+<pre class="r"><code># joined plot 2
+ggplot(joined1, aes(x=year)) +
+  geom_line( aes(y=total_earthqks), size=2, color=&quot;red&quot;) + 
+  geom_line( aes(y=total_suicides_world / 100), size=2, color=&quot;blue&quot;) +
+  scale_y_continuous(
+    # Features of the first axis
+    name = &quot;Number of Earthquakes&quot;,
+    # Add a second axis and specify its features
+    sec.axis = sec_axis(~.*100, name=&quot;Number of Suicides&quot;)
+  ) + 
+  theme_ipsum() +
+  theme(
+    axis.title.y = element_text(color = &quot;red&quot;, size=13),
+    axis.title.y.right = element_text(color = &quot;blue&quot;, size=13)
+  ) +
+  ggtitle(&quot;Earthquakes and Suicides From 1985 to 2016&quot;)</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+</div>
+<div id="this-third-plot-shows-the-top-ten-countries-with-the-most-suicides-in-2008.-i-picked-2008-because-of-the-economic-recession-in-the-u.s.-economic-depressions-and-mental-ones-often-go-hand-in-hand-so-i-was-curious-to-see-how-it-would-track-worldwide.-this-plot-shows-that-japan-russian-federation-and-the-u.s.-have-much-higher-cases-of-suicides-compared-to-the-other-top-7-countries-and-that-the-russian-federation-russia-holds-the-highest-values-overall." class="section level4">
+<h4>This third plot shows the top ten countries with the most suicides in 2008. I picked 2008 because of the economic recession in the U.S. (economic depressions and mental ones often go hand in hand), so I was curious to see how it would track worldwide. This plot shows that Japan, Russian Federation, and the U.S. have much higher cases of suicides compared to the other top 7 countries, and that the Russian Federation (Russia) holds the highest values overall.</h4>
+<pre class="r"><code>#plot3
+joined1  %&gt;% group_by(country)%&gt;% arrange(desc(total_suicides_country)) %&gt;% filter(year==2008) -&gt; top_ten
+top_ten %&gt;%as.data.frame()-&gt; top_ten1
+
+top_ten1%&gt;% slice(1:10)-&gt; top_ten2
+ggplot(top_ten2,aes(country,total_suicides_country, fill=country))+labs(x=&quot;Country&quot;, y=&quot;Total Number of Suicides&quot;, title= &quot;Countries w/ Highest Suicides in 2008&quot;) + geom_bar(stat=&quot;summary&quot;) +scale_y_continuous( breaks=seq(4000, 40000, by=5000)) + geom_errorbar(stat=&quot;summary&quot;, width=0.5)+  scale_fill_brewer(palette= &quot;Paired&quot;) + 
+theme(axis.text.x = element_text(angle = 90, hjust = 1))</code></pre>
+<pre><code>## No summary function supplied, defaulting to `mean_se()`
+## No summary function supplied, defaulting to `mean_se()`</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+</div>
+</div>
+<div id="dimensionality-reduction" class="section level3">
+<h3>Dimensionality Reduction</h3>
+<div id="k-meanspam-clustering-was-performed-on-the-numeric-variables-total_suicides_country-total_suicides_world-total_earthqks-and-avg_mag.-averag-sillhouette-width-is-about-0.41-which-means-that-the-structure-is-weak-and-could-be-artificial-thus-not-an-accurate-clustering-representation.-k-was-found-to-be-2-as-it-showed-the-highest-tightest-clustering-when-plotted.-correlations-between-all-variables-were-weak.-the-highest-relative-correlation-between-them-was-total_suicides_world-total_earthquakes.-all-the-points-on-the-plots-are-very-randomly-spaced-and-dont-show-any-visible-clustering-groups.-no-spurious-correlations-were-found-between-the-two-datasets-in-the-project." class="section level4">
+<h4>k-means/PAM clustering was performed on the numeric variables: total_suicides_country, total_suicides_world, total_earthqks, and avg_mag. Averag sillhouette width is about 0.41 which means that the structure is weak and could be artificial, thus not an accurate clustering representation. k was found to be 2 as it showed the highest, tightest clustering when plotted. Correlations between all variables were weak. The highest relative correlation between them was total_suicides_world &amp; total_earthquakes. All the points on the plots are very randomly spaced and don't show any visible clustering groups. No spurious correlations were found between the two datasets in the project.</h4>
+<pre class="r"><code>library(tidyverse)
+library(cluster)
+#install.packages(&quot;GGally&quot;)
+library(GGally)</code></pre>
+<pre><code>## Registered S3 method overwritten by &#39;GGally&#39;:
+##   method from   
+##   +.gg   ggplot2</code></pre>
+<pre class="r"><code>join_dat&lt;-joined1 %&gt;% ungroup() %&gt;% select(total_suicides_country,total_suicides_world,total_earthqks, avg_mag)
+sil_width&lt;-vector()
+for(i in 2:10){  
+  pot_fit &lt;- pam(join_dat, k = i)  
+  sil_width[i] &lt;- pot_fit$silinfo$avg.width  
+}
+joined1 %&gt;% ungroup%&gt;%select(total_suicides_country,total_suicides_world,total_earthqks,avg_mag) %&gt;% scale %&gt;% pam(k=2) -&gt; pam_cluster
+
+ggplot()+geom_line(aes(x=1:10,y=sil_width))+scale_x_continuous(name=&quot;k&quot;,breaks=1:10)# 2 on the graph is the highest and therefore the best, tightest cluster!</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<pre class="r"><code>pam_cluster$silinfo$avg.width #avg width is 0.41 (weak/artificial)</code></pre>
+<pre><code>## [1] 0.4138423</code></pre>
+<pre class="r"><code>joined1%&gt;%ungroup%&gt;% mutate(cluster=as.factor(pam_cluster$clustering)) %&gt;% ggpairs(columns = c(&quot;total_suicides_country&quot;,&quot;total_suicides_world&quot;,&quot;total_earthqks&quot;,&quot;avg_mag&quot;), aes(color=cluster)) </code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+</div>
+</div>
+</div>
+
+            
+        <hr>         <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div> 
+            </div>
+          </div>
+
+   <hr>  <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+        </div>
+      </div>
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="../../js/docs.min.js"></script>
+<script src="../../js/main.js"></script>
+
+<script src="../../js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Projects on Andrea Vanags&#39; SDS 348 Website</title>
+    <link>/project/</link>
+    <description>Recent content in Projects on Andrea Vanags&#39; SDS 348 Website</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Fri, 11 Dec 2020 00:00:00 +0000</lastBuildDate><atom:link href="/project/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Project 1</title>
+      <link>/project/project1/</link>
+      <pubDate>Fri, 11 Dec 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/project/project1/</guid>
+      <description>Andrea Vanags (av29824) Introduction: The two datasets I have chosen for this project contain information about suicides and earthquakes worldwide from 1985 to 2016. The suicides dataset contains qualitative (ex: sex, age, generation, countries) and quantitative data (ex: year, number of suicides, country population, gdp for year and per capita). The earthquakes dataset countains mostly quantitative values (ex:date, longitude, latitude, depth, magnitude), some qualitative (ex: ID, status, type) and quite a few N/As.</description>
+    </item>
+    
+    <item>
+      <title>project 2</title>
+      <link>/project/project2/</link>
+      <pubDate>Fri, 11 Dec 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/project/project2/</guid>
+      <description>0. Introduce your dataset and each of your variables in a paragraph. What are they measuring? How many observations? The &#39;HealthInsurance&#39; dataset including info from the the Medical Expenditure Panel Survey conducted in 1996 was recovered from the AER package. This dataset contains 8,802 observations on 11 variables, but the variables I will be focusing on are: age, gender, education, family, ethnicity, married, insurance, and health. The wrangled dataset was renamed as &#39;data2&#39; and it contains 1,258 rows (observations) for 8 columns.</description>
+    </item>
+    
+  </channel>
+</rss>
