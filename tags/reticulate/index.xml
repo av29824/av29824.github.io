@@ -13,7 +13,7 @@
       <pubDate>Thu, 10 Dec 2020 00:00:00 +0000</pubDate>
       
       <guid>/post/2020/12/10/test-post/</guid>
-      <description>On the wrong page? Maybe you&#39;re looking for my first project? Click below! Link to project 1
+      <description>On the wrong page? Maybe you&#39;re looking for my first project? Click here! Link to project 1
 Still here?? Nice.
 Let&#39;s look at how we can use R and Python together without wanting to tear your hair out in frustration: reticulate.
 #R-code chunk library(reticulate) lookalike &amp;lt;- &amp;quot;who is dr. woodward&amp;#39;s celebrity look-alike?&amp;quot; #python code chunk one= &amp;quot;brian david gilbert&amp;quot; two= &amp;quot;and mathew gray gubler&amp;quot; #access R-defined objects with r. print(r.</description>

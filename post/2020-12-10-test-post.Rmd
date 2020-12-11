@@ -8,7 +8,7 @@ tags: ["r", "rmarkdown", "python", "reticulate"]
 description: ''
 ---
 
-On the wrong page? Maybe you're looking for my first project? Click below!
+On the wrong page? Maybe you're looking for my first project? Click here!
 [Link to project 1](/projects/project1/)
 
 Still here?? Nice. 
@@ -34,6 +34,6 @@ print(r.lookalike,one,two)
 
 ![Brian David Gilbert](/post/2020-12-10-andrea-s-first-post_files/IMG_8572.PNG)
 
-![Mathew Gray Gubler](/post/2020-12-10-andrea-s-first-post_files/Matthew_Gray_Gubler_glasses.jpg)
+![Mathew Gray Gubler](/post/2020-12-10-test-post_files/mat_two_small.jpg)
 
-![like... even the same glasses... uncanny ](/post/2020-12-10-andrea-s-first-post_files/gubler_2.jpg)
+Like... even the glasses are similar I swear...
